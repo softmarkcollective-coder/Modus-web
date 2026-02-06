@@ -1,16 +1,25 @@
-"use client";
+'use client';
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function GuestClient() {
+function GuestContent() {
   const searchParams = useSearchParams();
-  const event = searchParams.get("event");
+  const name = searchParams.get('name') ?? 'Guest';
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-100">
       <h1 className="text-2xl font-semibold">
-        Guest page {event ? `for event: ${event}` : ""}
+        Welcome, {name}
       </h1>
     </div>
+  );
+}
+
+export default function GuestPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading guest…</div>}>
+      <GuestContent />
+    </Suspense>
   );
 }
