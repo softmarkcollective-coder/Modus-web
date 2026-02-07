@@ -1,5 +1,4 @@
-import GuestClient from "./GuestClient";
+"use client";
 
-export default function GuestPage() {
-  return <GuestClient />;
-}
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
