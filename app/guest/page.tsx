@@ -35,7 +35,7 @@ export default function GuestPage() {
         throw new Error("not-found");
       }
 
-      const json = await res.json();
+      const json: GuestResult = await res.json();
       setData(json);
     } catch {
       setError(
@@ -66,20 +66,22 @@ export default function GuestPage() {
           textAlign: "center",
         }}
       >
+        {/* Event name (altid sikkert) */}
+        <p
+          style={{
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            opacity: 0.6,
+            fontSize: 12,
+            marginBottom: 8,
+          }}
+        >
+          {data ? data.event.name : "My event"}
+        </p>
+
+        {/* SEARCH STATE */}
         {!data && (
           <>
-            <p
-              style={{
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                opacity: 0.6,
-                fontSize: 12,
-                marginBottom: 8,
-              }}
-            >
-              My event
-            </p>
-
             <h1
               style={{
                 fontSize: 32,
@@ -156,6 +158,7 @@ export default function GuestPage() {
           </>
         )}
 
+        {/* RESULT STATE */}
         {data && (
           <>
             {data.event.imageUrl && (
