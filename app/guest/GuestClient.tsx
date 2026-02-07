@@ -13,15 +13,8 @@ export default function GuestClient() {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
-    if (!eventId) {
-      setError(
-        "This link is missing event information. Please use the link provided by the host."
-      );
-      return;
-    }
-
-    if (!name.trim()) {
-      setError("Please enter your name.");
+    if (!name || !eventId) {
+      setError("Missing name or event.");
       return;
     }
 
@@ -31,7 +24,8 @@ export default function GuestClient() {
 
     try {
       const res = await fetch(
-        `/api/guest?name=${encodeURIComponent(name)}&eventId=${eventId}`
+        `/api/guest?name=${encodeURIComponent(name)}&eventId=${encodeURIComponent(eventId)}`,
+        { cache: "no-store" }
       );
 
       const json = await res.json();
@@ -43,7 +37,19 @@ export default function GuestClient() {
         return;
       }
 
-      setTable(json.result.table);
+      // 🔑 DEN VIGTIGE LINJE
+      const resolvedTable =
+        json.table ??
+        json.guest?.table ??
+        json.result?.table ??
+        null;
+
+      if (!resolvedTable) {
+        setError("Guest found, but no table assigned.");
+        return;
+      }
+
+      setTable(resolvedTable);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -64,7 +70,6 @@ export default function GuestClient() {
         />
 
         <button
-          type="button"          // 🔒 VIGTIGSTE LINJE
           onClick={handleSubmit}
           disabled={loading}
           style={{ marginTop: 20 }}
@@ -73,9 +78,7 @@ export default function GuestClient() {
         </button>
 
         {error && <p style={{ marginTop: 16 }}>{error}</p>}
-        {table !== null && (
-          <h2 style={{ marginTop: 24 }}>Table {table}</h2>
-        )}
+        {table !== null && <h2 style={{ marginTop: 24 }}>Table {table}</h2>}
       </div>
     </main>
   );
