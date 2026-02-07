@@ -13,7 +13,6 @@ export default function GuestClient() {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
-    // ✅ Giv feedback i stedet for silent return
     if (!eventId) {
       setError(
         "This link is missing event information. Please use the link provided by the host."
@@ -65,6 +64,7 @@ export default function GuestClient() {
         />
 
         <button
+          type="button"          // 🔒 VIGTIGSTE LINJE
           onClick={handleSubmit}
           disabled={loading}
           style={{ marginTop: 20 }}
