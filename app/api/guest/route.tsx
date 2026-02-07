@@ -3,37 +3,41 @@ import { NextResponse } from "next/server";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const name = searchParams.get("name");
+  const eventId = searchParams.get("eventId");
 
-  if (!name) {
-    return NextResponse.json({ found: false });
+  if (!name || !eventId) {
+    return NextResponse.json(
+      { found: false },
+      { status: 200 }
+    );
   }
 
-  // 👇 KALD TIL APPEN (VIBECODE)
-  // Skift URL’en til den endpoint, appen allerede har
-  const appResponse = await fetch(
-    `${process.env.APP_API_URL}/guest-lookup?name=${encodeURIComponent(name)}`,
-    {
-      cache: "no-store",
-    }
-  );
+  const apiUrl = process.env.APP_API_URL;
 
-  if (!appResponse.ok) {
-    // Appen svarer, men fandt ikke gæsten
-    return NextResponse.json({ found: false });
+  if (!apiUrl) {
+    console.error("APP_API_URL is missing");
+    return NextResponse.json(
+      { found: false },
+      { status: 200 }
+    );
   }
 
-  const data = await appResponse.json();
+  try {
+    const res = await fetch(
+      `${apiUrl}/api/guest/lookup?name=${encodeURIComponent(name)}&eventId=${encodeURIComponent(eventId)}`,
+      { cache: "no-store" }
+    );
 
-  // Appen SKAL returnere data i dette format
-  return NextResponse.json({
-    found: true,
-    event: {
-      name: data.event.name,
-      welcomeText: data.event.welcomeText,
-      imageUrl: data.event.imageUrl,
-    },
-    result: {
-      table: data.table,
-    },
-  });
+    const json = await res.json();
+
+    // Vibecode returnerer altid { found: boolean }
+    return NextResponse.json(json, { status: 200 });
+
+  } catch (error) {
+    console.error("Guest lookup failed:", error);
+    return NextResponse.json(
+      { found: false },
+      { status: 200 }
+    );
+  }
 }
