@@ -13,7 +13,18 @@ export default function GuestClient() {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
-    if (!name || !eventId) return;
+    // ✅ Giv feedback i stedet for silent return
+    if (!eventId) {
+      setError(
+        "This link is missing event information. Please use the link provided by the host."
+      );
+      return;
+    }
+
+    if (!name.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -62,7 +73,9 @@ export default function GuestClient() {
         </button>
 
         {error && <p style={{ marginTop: 16 }}>{error}</p>}
-        {table && <h2 style={{ marginTop: 24 }}>Table {table}</h2>}
+        {table !== null && (
+          <h2 style={{ marginTop: 24 }}>Table {table}</h2>
+        )}
       </div>
     </main>
   );
