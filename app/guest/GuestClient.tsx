@@ -5,11 +5,6 @@ import { useState } from "react";
 
 type GuestResult = {
   found: boolean;
-  event?: {
-    name: string;
-    welcomeText?: string;
-    imageUrl?: string;
-  };
   result?: {
     table: number;
   };
@@ -29,7 +24,6 @@ export default function GuestClient() {
 
     setLoading(true);
     setError(null);
-    setData(null);
 
     const res = await fetch(
       `/api/guest?name=${encodeURIComponent(name)}&eventId=${encodeURIComponent(eventId)}`
@@ -45,12 +39,30 @@ export default function GuestClient() {
       return;
     }
 
-    setData(json);
+    setData(json); // 🔥 DETTE SKIFTER VIEW
     setLoading(false);
   }
 
+  /* ===============================
+     🔁 RENDER-BRANCH (DET MANGLEDE)
+     =============================== */
+
+  if (data?.found) {
+    return (
+      <div className="result-screen">
+        <h1>Your table</h1>
+        <p>You are seated at table</p>
+        <div className="table-number">{data.result?.table}</div>
+      </div>
+    );
+  }
+
+  /* ===============================
+     🔍 SØGESKÆRM
+     =============================== */
+
   return (
-    <div className="guest-wrapper">
+    <div className="search-screen">
       <h1>Find your table</h1>
 
       <input
@@ -64,13 +76,6 @@ export default function GuestClient() {
       </button>
 
       {error && <p className="error">{error}</p>}
-
-      {data?.found && (
-        <div className="result">
-          <p>Your table number:</p>
-          <strong>{data.result?.table}</strong>
-        </div>
-      )}
     </div>
   );
 }
