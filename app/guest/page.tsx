@@ -1,19 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type GuestResult = {
-  event: {
+  found: boolean;
+  event?: {
     name: string;
     welcomeText?: string;
     imageUrl?: string;
   };
-  result: {
+  result?: {
     table: number;
   };
 };
 
 export default function GuestPage() {
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("eventId");
+
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,24 +27,35 @@ export default function GuestPage() {
   async function handleSubmit() {
     if (!name.trim()) return;
 
+    if (!eventId) {
+      setError("This event link is invalid. Please contact the host.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setData(null);
 
     try {
       const res = await fetch(
-        `/api/guest?name=${encodeURIComponent(name.trim())}`
+        `/api/guest?name=${encodeURIComponent(
+          name.trim()
+        )}&eventId=${encodeURIComponent(eventId)}`
       );
 
-      if (!res.ok) {
-        throw new Error("not-found");
+      const json: GuestResult = await res.json();
+
+      if (!json.found) {
+        setError(
+          "We couldn’t find your name on the guest list. Please check the spelling or contact the host."
+        );
+        return;
       }
 
-      const json: GuestResult = await res.json();
       setData(json);
     } catch {
       setError(
-        "We couldn’t find your name on the guest list. Please check the spelling and try again."
+        "Something went wrong. Please try again or contact the host."
       );
     } finally {
       setLoading(false);
@@ -66,22 +82,20 @@ export default function GuestPage() {
           textAlign: "center",
         }}
       >
-        {/* Event name (altid sikkert) */}
-        <p
-          style={{
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            opacity: 0.6,
-            fontSize: 12,
-            marginBottom: 8,
-          }}
-        >
-          {data ? data.event.name : "My event"}
-        </p>
-
-        {/* SEARCH STATE */}
         {!data && (
           <>
+            <p
+              style={{
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                opacity: 0.6,
+                fontSize: 12,
+                marginBottom: 8,
+              }}
+            >
+              My event
+            </p>
+
             <h1
               style={{
                 fontSize: 32,
@@ -132,14 +146,7 @@ export default function GuestPage() {
                   "linear-gradient(135deg, #f6e6b4 0%, #e5c97b 45%, #c9a84a 100%)",
                 boxShadow:
                   "0 6px 18px rgba(201,168,74,0.35), inset 0 1px 0 rgba(255,255,255,0.6)",
-                transition: "transform 0.15s ease, box-shadow 0.15s ease",
               }}
-              onMouseDown={(e) =>
-                (e.currentTarget.style.transform = "scale(0.97)")
-              }
-              onMouseUp={(e) =>
-                (e.currentTarget.style.transform = "scale(1)")
-              }
             >
               {loading ? "Finding your table…" : "Show my table"}
             </button>
@@ -158,8 +165,7 @@ export default function GuestPage() {
           </>
         )}
 
-        {/* RESULT STATE */}
-        {data && (
+        {data && data.event && data.result && (
           <>
             {data.event.imageUrl && (
               <img
@@ -174,12 +180,7 @@ export default function GuestPage() {
               />
             )}
 
-            <p
-              style={{
-                opacity: 0.6,
-                marginBottom: 6,
-              }}
-            >
+            <p style={{ opacity: 0.6, marginBottom: 6 }}>
               You are seated at
             </p>
 
@@ -194,12 +195,7 @@ export default function GuestPage() {
             </h2>
 
             {data.event.welcomeText && (
-              <p
-                style={{
-                  opacity: 0.6,
-                  marginTop: 16,
-                }}
-              >
+              <p style={{ opacity: 0.6, marginTop: 16 }}>
                 {data.event.welcomeText}
               </p>
             )}
