@@ -4,29 +4,36 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const name = searchParams.get("name");
 
+  if (!name) {
+    return NextResponse.json({ found: false });
+  }
+
+  // 👇 KALD TIL APPEN (VIBECODE)
+  // Skift URL’en til den endpoint, appen allerede har
+  const appResponse = await fetch(
+    `${process.env.APP_API_URL}/guest-lookup?name=${encodeURIComponent(name)}`,
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!appResponse.ok) {
+    // Appen svarer, men fandt ikke gæsten
+    return NextResponse.json({ found: false });
+  }
+
+  const data = await appResponse.json();
+
+  // Appen SKAL returnere data i dette format
   return NextResponse.json({
+    found: true,
     event: {
-      name: "My Event",
-      imageUrl:
-        "https://images.unsplash.com/photo-1549373738-65c5cf36e93b",
-      welcomeText: "Welcome to My party",
-      tables: [
-        {
-          number: 1,
-          seats: [
-            { seat: 1, guestName: "Anna" },
-            { seat: 2, guestName: name },
-            { seat: 3, guestName: "Peter" },
-            { seat: 4, guestName: "Louise" },
-            { seat: 5, guestName: "Jonas" },
-          ],
-        },
-      ],
+      name: data.event.name,
+      welcomeText: data.event.welcomeText,
+      imageUrl: data.event.imageUrl,
     },
     result: {
-      table: 1,
-      seat: 2,
-      totalSeats: 5,
+      table: data.table,
     },
   });
 }
