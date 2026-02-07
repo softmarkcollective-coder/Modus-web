@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export default function GuestClient() {
   const searchParams = useSearchParams();
@@ -9,7 +9,7 @@ export default function GuestClient() {
 
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<number | null>(null);
+  const [table, setTable] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
@@ -17,7 +17,7 @@ export default function GuestClient() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
+    setTable(null);
 
     try {
       const res = await fetch(
@@ -33,7 +33,7 @@ export default function GuestClient() {
         return;
       }
 
-      setResult(json.result.table);
+      setTable(json.result.table);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -62,7 +62,7 @@ export default function GuestClient() {
         </button>
 
         {error && <p style={{ marginTop: 16 }}>{error}</p>}
-        {result && <h2 style={{ marginTop: 24 }}>Table {result}</h2>}
+        {table && <h2 style={{ marginTop: 24 }}>Table {table}</h2>}
       </div>
     </main>
   );
