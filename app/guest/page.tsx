@@ -1,4 +1,6 @@
-"use client";
+import type { ReactNode } from "react";
+import GuestClient from "./GuestClient";
 
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+export default function Page(): ReactNode {
+  return <GuestClient />;
+}
