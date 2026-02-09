@@ -23,14 +23,9 @@ export default function GuestPage() {
     }
 
     try {
-      const res = await fetch("/api/guest/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId,
-          name,
-        }),
-      });
+      const res = await fetch(
+        `/api/guest?eventId=${encodeURIComponent(eventId)}&name=${encodeURIComponent(name)}`
+      );
 
       const data = await res.json();
 
@@ -41,7 +36,10 @@ export default function GuestPage() {
         return;
       }
 
-      setResult(data.guest);
+      setResult({
+        name: data.guest.name,
+        table: data.table,
+      });
     } catch {
       setError("Something went wrong. Please try again.");
     }
