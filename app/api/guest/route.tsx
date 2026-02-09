@@ -8,7 +8,9 @@ const store: {
   events: Record<
     string,
     {
-      tables: { name: string; table: string }[];
+      name?: string;
+      layout?: any;
+      guests: { name: string; table: number }[];
     }
   >;
 } = (globalThis as any).__MODUS_STORE__ || {
@@ -19,32 +21,32 @@ const store: {
 
 /**
  * POST /api/guest/sync
- * Modtager data fra Mobile
+ * Modtager RIGTIGE data fra Mobile
  */
 export async function POST(req: Request) {
   const body = await req.json();
-  const { eventId } = body;
+  const { eventId, name, layout, guests } = body;
 
-  if (!eventId) {
-    return NextResponse.json({ ok: false, error: "Missing eventId" }, { status: 400 });
+  if (!eventId || !Array.isArray(guests)) {
+    return NextResponse.json(
+      { ok: false, error: "Missing eventId or guests" },
+      { status: 400 }
+    );
   }
 
-  // 🔧 DEMO-DATA (kan senere erstattes med ægte data fra Mobile)
   store.events[eventId] = {
-    tables: [
-      { name: "Alex", table: "Table 3" },
-      { name: "Claudia", table: "Table 1" },
-      { name: "Henrik", table: "Table 1" },
-    ],
+    name,
+    layout,
+    guests,
   };
 
-  console.log("✅ SYNC OK:", eventId);
+  console.log("✅ SYNC OK:", eventId, guests);
 
   return NextResponse.json({ ok: true });
 }
 
 /**
- * GET /api/guest?eventId=xxx&name=Alex
+ * GET /api/guest?eventId=xxx&name=Alex Scott
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -55,22 +57,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ found: false });
   }
 
-  if (!store.events[eventId]) {
-    store.events[eventId] = {
-      tables:[
-        { name: "Alex", table: "Table 3" },
-        { name: "Claudia", table: "Table 1" },
-        { name: "Henrik", table: "Table 1" },
-      ]
-    };
-  
-  }
   const event = store.events[eventId];
   if (!event) {
     return NextResponse.json({ found: false });
   }
 
-  const match = event.tables.find(
+  const match = event.guests.find(
     (g) => g.name.toLowerCase() === name.toLowerCase()
   );
 
@@ -80,7 +72,9 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     found: true,
-    table: match.table,
-    guest: { name: match.name },
+    guest: {
+      name: match.name,
+      table: `Table ${match.table}`,
+    },
   });
 }
