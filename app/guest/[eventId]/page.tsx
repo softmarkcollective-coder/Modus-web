@@ -23,11 +23,10 @@ export default function GuestPage() {
     }
 
     try {
-      const url = `/api/guest?eventId=${encodeURIComponent(
-        eventId
-      )}&name=${encodeURIComponent(name)}`;
+      const res = await fetch(
+        `/api/guest?eventId=${eventId}&name=${encodeURIComponent(name)}`
+      );
 
-      const res = await fetch(url);
       const data = await res.json();
 
       if (!data.found) {

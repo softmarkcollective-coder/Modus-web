@@ -55,6 +55,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ found: false });
   }
 
+  if (!store.events[eventId]) {
+    store.events[eventId] = {
+      tables:[
+        { name: "Alex", table: "Table 3" },
+        { name: "Claudia", table: "Table 1" },
+        { name: "Henrik", table: "Table 1" },
+      ]
+    };
+  
+  }
   const event = store.events[eventId];
   if (!event) {
     return NextResponse.json({ found: false });
