@@ -24,7 +24,7 @@ export default function GuestPage() {
 
     try {
       const res = await fetch(
-        `/api/guest?eventId=${eventId}&name=${encodeURIComponent(name)}`
+        `/api/guest?eventId=${encodeURIComponent(eventId)}&name=${encodeURIComponent(name)}`
       );
 
       const data = await res.json();
@@ -40,7 +40,7 @@ export default function GuestPage() {
         name: data.guest.name,
         table: data.table,
       });
-    } catch {
+    } catch (e) {
       setError("Something went wrong. Please try again.");
     }
   }
@@ -97,7 +97,7 @@ export default function GuestPage() {
 
         {result && (
           <div style={{ marginTop: 24 }}>
-            <p>
+            <p style={{ fontSize: 18 }}>
               <strong>{result.name}</strong>
             </p>
             <p>Table: {result.table}</p>
