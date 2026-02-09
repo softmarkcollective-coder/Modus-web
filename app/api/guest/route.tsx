@@ -8,9 +8,8 @@ const store: {
   events: Record<
     string,
     {
-      name?: string;
-      layout?: any;
       guests: { name: string; table: number }[];
+      layout?: any;
     }
   >;
 } = (globalThis as any).__MODUS_STORE__ || {
@@ -21,32 +20,32 @@ const store: {
 
 /**
  * POST /api/guest/sync
- * Modtager RIGTIGE data fra Mobile
+ * Modtager data fra Mobile (SANDHEDEN)
  */
 export async function POST(req: Request) {
   const body = await req.json();
-  const { eventId, name, layout, guests } = body;
+  const { eventId, guests, layout } = body;
 
-  if (!eventId || !Array.isArray(guests)) {
+  if (!eventId || !guests) {
     return NextResponse.json(
       { ok: false, error: "Missing eventId or guests" },
       { status: 400 }
     );
   }
 
+  // ✅ GEM PRÆCIS DET MOBILE SENDER
   store.events[eventId] = {
-    name,
-    layout,
     guests,
+    layout,
   };
 
-  console.log("✅ SYNC OK:", eventId, guests);
+  console.log("✅ SYNC OK FROM MOBILE:", eventId, guests);
 
   return NextResponse.json({ ok: true });
 }
 
 /**
- * GET /api/guest?eventId=xxx&name=Alex Scott
+ * GET /api/guest?eventId=xxx&name=Alex
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -72,9 +71,6 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     found: true,
-    guest: {
-      name: match.name,
-      table: `Table ${match.table}`,
-    },
+    guest: match,
   });
 }
