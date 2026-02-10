@@ -34,12 +34,22 @@ interface GuestNotFoundResponse {
 }
 
 type GuestResponse = GuestFoundResponse | GuestNotFoundResponse;
-
 type EventError = { error: string };
 
 export default function GuestClient() {
   const params = useParams();
   const eventId = params.eventId as string;
+
+  /* ✅ VIGTIG RETTELSE – ENV GUARD */
+  if (!BASE_URL) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-lg text-red-600">
+          Missing NEXT_PUBLIC_VIBECODE_API_BASE
+        </p>
+      </div>
+    );
+  }
 
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +102,6 @@ export default function GuestClient() {
 
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
-
     if (!guestName.trim()) return;
 
     setGuestLoading(true);
@@ -101,7 +110,9 @@ export default function GuestClient() {
 
     try {
       const res = await fetch(
-        `${BASE_URL}/api/public/event/${eventId}/guest?name=${encodeURIComponent(guestName.trim())}`
+        `${BASE_URL}/api/public/event/${eventId}/guest?name=${encodeURIComponent(
+          guestName.trim()
+        )}`
       );
 
       if (!res.ok) {
@@ -174,7 +185,7 @@ export default function GuestClient() {
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               placeholder="Enter your name"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
             />
             <button
               type="submit"
