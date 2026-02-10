@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 
 type GuestResult = {
@@ -8,17 +8,16 @@ type GuestResult = {
     id: string;
     name: string;
     image?: string;
-    layout: any; // hele bordopstillingen (renderes senere)
+    layout: any;
   };
   guest: {
     name: string;
-    table: number;
+    tableId: number;
   };
 };
 
 export default function GuestClient() {
-  const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId");
+  const { eventId } = useParams<{ eventId: string }>();
 
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,15 +30,21 @@ export default function GuestClient() {
       return;
     }
 
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBase) {
+      setError("API base URL is not configured.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
       const res = await fetch(
-        `/api/guest?name=${encodeURIComponent(name)}&eventId=${encodeURIComponent(
+        `${apiBase}/api/public/event/${encodeURIComponent(
           eventId
-        )}`,
+        )}/guest?name=${encodeURIComponent(name)}`,
         { cache: "no-store" }
       );
 
@@ -52,7 +57,6 @@ export default function GuestClient() {
         return;
       }
 
-      // 🔒 FAST KONTRAKT – ingen fallback-gæt
       setResult({
         event: json.event,
         guest: json.guest,
@@ -93,14 +97,13 @@ export default function GuestClient() {
         {result && (
           <>
             <h2 style={{ marginTop: 24 }}>
-              Table {result.guest.table}
+              Table {result.guest.tableId}
             </h2>
 
-            {/* 
+            {/*
               🔜 NÆSTE TRIN:
-              Her renderer vi HELE bordopstillingen
-              og fremhæver result.guest.table
-              baseret på result.event.layout
+              Render hele bordopstillingen
+              via result.event.layout
             */}
           </>
         )}
