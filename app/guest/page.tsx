@@ -1,5 +1,3 @@
-import GuestClient from "./GuestClient";
-
 export default function Page() {
-  return <GuestClient />;
+  return <h1>HELLO FROM GUEST EVENT PAGE</h1>;
 }
