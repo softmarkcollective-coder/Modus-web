@@ -3,131 +3,97 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
-type GuestResult = {
+type EventData = {
+  id: string;
   name: string;
-  tableId: number;
+  image?: string | null;
+  layout: any;
+};
+
+type GuestData = {
+  name: string;
+  table: number;
 };
 
 export default function GuestPage() {
   const { eventId } = useParams<{ eventId: string }>();
 
   const [name, setName] = useState("");
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [guest, setGuest] = useState<GuestData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<GuestResult | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleLookup() {
-    setError(null);
-    setResult(null);
-
-    if (!name || !eventId) {
-      setError("Missing name or event.");
-      return;
-    }
-
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-    if (!apiBase) {
-      setError("API base URL is not configured.");
-      return;
-    }
+    if (!eventId || !name) return;
 
     setLoading(true);
+    setError(null);
+    setGuest(null);
+
+    const API = process.env.NEXT_PUBLIC_VIBECODE_API_BASE;
 
     try {
-      const res = await fetch(
-        `${apiBase}/api/public/event/${encodeURIComponent(
-          eventId
-        )}/guest?name=${encodeURIComponent(name)}`,
-        {
-          method: "GET",
-          cache: "no-store",
-        }
+      // 1. Hent event (alt data)
+      const eventRes = await fetch(
+        `${API}/api/public/event/${eventId}`,
+        { cache: "no-store" }
       );
+      const eventJson = await eventRes.json();
+      setEvent(eventJson);
 
-      // 🔑 VIGTIG RETTELSE
-      if (!res.ok) {
-        throw new Error(`API error ${res.status}`);
-      }
+      // 2. Slå gæst op
+      const guestRes = await fetch(
+        `${API}/api/public/event/${eventId}/guest?name=${encodeURIComponent(name)}`,
+        { cache: "no-store" }
+      );
+      const guestJson = await guestRes.json();
 
-      const data = await res.json();
-
-      if (!data.found) {
-        setError(
-          "We couldn't find your name on the guest list. Please check the spelling or contact the host."
-        );
+      if (!guestJson.found) {
+        setError("We couldn’t find your name on the guest list.");
         return;
       }
 
-      setResult(data.guest);
-    } catch (e) {
-      setError("Something went wrong. Please try again.");
+      setGuest(guestJson.guest);
+    } catch {
+      setError("Something went wrong.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#0b0b0b",
-        color: "white",
-        padding: 24,
-      }}
-    >
-      <div style={{ maxWidth: 420, width: "100%", textAlign: "center" }}>
-        <h1 style={{ fontSize: 36, marginBottom: 24 }}>Find your table</h1>
+    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
+      <div style={{ width: 420, textAlign: "center" }}>
+        <h1>{event?.name ?? "Find your table"}</h1>
 
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Your name"
-          style={{
-            width: "100%",
-            padding: 14,
-            fontSize: 16,
-            borderRadius: 12,
-            border: "1px solid #333",
-            marginBottom: 16,
-            background: "#111",
-            color: "white",
-          }}
-        />
+        {!guest && (
+          <>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              style={{ width: "100%", padding: 12, marginTop: 20 }}
+            />
 
-        <button
-          onClick={handleLookup}
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: 14,
-            fontSize: 16,
-            borderRadius: 999,
-            background: "#d6b36a",
-            color: "#000",
-            border: "none",
-            cursor: loading ? "default" : "pointer",
-            opacity: loading ? 0.7 : 1,
-            marginBottom: 16,
-          }}
-        >
-          {loading ? "Searching…" : "Show my table"}
-        </button>
+            <button
+              onClick={handleLookup}
+              disabled={loading}
+              style={{ marginTop: 20 }}
+            >
+              {loading ? "Finding…" : "Show my table"}
+            </button>
+          </>
+        )}
 
-        {error && <p style={{ opacity: 0.9 }}>{error}</p>}
+        {error && <p style={{ marginTop: 16 }}>{error}</p>}
 
-        {result && (
-          <div style={{ marginTop: 24 }}>
-            <p style={{ fontSize: 18 }}>
-              <strong>{result.name}</strong>
-            </p>
-            <p>Table: {result.tableId}</p>
-          </div>
+        {guest && (
+          <h2 style={{ marginTop: 24 }}>
+            Table {guest.table}
+          </h2>
         )}
       </div>
-    </div>
+    </main>
   );
 }
