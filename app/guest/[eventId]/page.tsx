@@ -3,15 +3,18 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
+type GuestResult = {
+  name: string;
+  tableId: number;
+};
+
 export default function GuestPage() {
   const { eventId } = useParams<{ eventId: string }>();
 
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{
-    name: string;
-    table: string;
-  } | null>(null);
+  const [result, setResult] = useState<GuestResult | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleLookup() {
     setError(null);
@@ -22,9 +25,24 @@ export default function GuestPage() {
       return;
     }
 
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+    if (!apiBase) {
+      setError("API base URL is not configured.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const res = await fetch(
-        `/api/guest?eventId=${encodeURIComponent(eventId)}&name=${encodeURIComponent(name)}`
+        `${apiBase}/api/public/event/${encodeURIComponent(
+          eventId
+        )}/guest?name=${encodeURIComponent(name)}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
       );
 
       const data = await res.json();
@@ -36,12 +54,11 @@ export default function GuestPage() {
         return;
       }
 
-      setResult({
-        name: data.guest.name,
-        table: data.table,
-      });
+      setResult(data.guest);
     } catch (e) {
       setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -78,6 +95,7 @@ export default function GuestPage() {
 
         <button
           onClick={handleLookup}
+          disabled={loading}
           style={{
             width: "100%",
             padding: 14,
@@ -86,11 +104,12 @@ export default function GuestPage() {
             background: "#d6b36a",
             color: "#000",
             border: "none",
-            cursor: "pointer",
+            cursor: loading ? "default" : "pointer",
+            opacity: loading ? 0.7 : 1,
             marginBottom: 16,
           }}
         >
-          Show my table
+          {loading ? "Searching…" : "Show my table"}
         </button>
 
         {error && <p style={{ opacity: 0.9 }}>{error}</p>}
@@ -100,7 +119,7 @@ export default function GuestPage() {
             <p style={{ fontSize: 18 }}>
               <strong>{result.name}</strong>
             </p>
-            <p>Table: {result.table}</p>
+            <p>Table: {result.tableId}</p>
           </div>
         )}
       </div>
