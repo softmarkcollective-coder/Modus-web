@@ -45,6 +45,11 @@ export default function GuestPage() {
         }
       );
 
+      // 🔑 VIGTIG RETTELSE
+      if (!res.ok) {
+        throw new Error(`API error ${res.status}`);
+      }
+
       const data = await res.json();
 
       if (!data.found) {
