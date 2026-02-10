@@ -39,7 +39,8 @@ type EventError = { error: string };
 
 export default function GuestClient() {
   const params = useParams();
-  const eventId = params.eventId as string;
+  const eventId =
+    typeof params?.eventId === "string" ? params.eventId : null;
 
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,7 +53,7 @@ export default function GuestClient() {
   const [guestError, setGuestError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || !BASE_URL) return;
 
     async function fetchEvent() {
       setLoading(true);
@@ -60,7 +61,10 @@ export default function GuestClient() {
       setNotFound(false);
 
       try {
-        const res = await fetch(`${BASE_URL}/api/public/event/${eventId}`);
+        const res = await fetch(
+          `${BASE_URL}/api/public/event/${eventId}`,
+          { cache: "no-store" }
+        );
 
         if (res.status === 404) {
           setNotFound(true);
@@ -93,7 +97,7 @@ export default function GuestClient() {
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!guestName.trim()) return;
+    if (!guestName.trim() || !eventId || !BASE_URL) return;
 
     setGuestLoading(true);
     setGuestError(null);
@@ -101,7 +105,10 @@ export default function GuestClient() {
 
     try {
       const res = await fetch(
-        `${BASE_URL}/api/public/event/${eventId}/guest?name=${encodeURIComponent(guestName.trim())}`
+        `${BASE_URL}/api/public/event/${eventId}/guest?name=${encodeURIComponent(
+          guestName.trim()
+        )}`,
+        { cache: "no-store" }
       );
 
       if (!res.ok) {
@@ -116,6 +123,14 @@ export default function GuestClient() {
     } finally {
       setGuestLoading(false);
     }
+  }
+
+  if (!eventId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-lg text-red-600">Missing event ID</p>
+      </div>
+    );
   }
 
   if (loading) {
@@ -174,7 +189,7 @@ export default function GuestClient() {
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               placeholder="Enter your name"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
             />
             <button
               type="submit"
@@ -188,7 +203,7 @@ export default function GuestClient() {
 
         {guestError && (
           <div className="p-4 bg-red-100 text-red-700 rounded-lg mb-4">
-            Error: {guestError}
+            {guestError}
           </div>
         )}
 
@@ -196,13 +211,17 @@ export default function GuestClient() {
           <div className="p-4 bg-white rounded-lg shadow">
             {guestResult.found ? (
               <div className="text-center">
-                <p className="text-lg font-medium">{guestResult.guest.name}</p>
+                <p className="text-lg font-medium">
+                  {guestResult.guest.name}
+                </p>
                 {guestResult.guest.table !== null ? (
                   <p className="text-3xl font-bold text-blue-600 mt-2">
                     Table {guestResult.guest.table}
                   </p>
                 ) : (
-                  <p className="text-gray-500 mt-2">No table assigned</p>
+                  <p className="text-gray-500 mt-2">
+                    No table assigned
+                  </p>
                 )}
               </div>
             ) : (
