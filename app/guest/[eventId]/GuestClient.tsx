@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 
-const BASE_URL = process.env.NEXT_PUBLIC_VIBECODE_API_BASE;
-
 interface Table {
   id: number;
   x: number;
@@ -40,17 +38,6 @@ export default function GuestClient() {
   const params = useParams();
   const eventId = params.eventId as string;
 
-  /* ✅ VIGTIG RETTELSE – ENV GUARD */
-  if (!BASE_URL) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-red-600">
-          Missing NEXT_PUBLIC_VIBECODE_API_BASE
-        </p>
-      </div>
-    );
-  }
-
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +48,8 @@ export default function GuestClient() {
   const [guestLoading, setGuestLoading] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
 
+  /* ---------------- EVENT FETCH (via Next API) ---------------- */
+
   useEffect(() => {
     if (!eventId) return;
 
@@ -70,7 +59,7 @@ export default function GuestClient() {
       setNotFound(false);
 
       try {
-        const res = await fetch(`${BASE_URL}/api/public/event/${eventId}`);
+        const res = await fetch(`/api/guest/event/${eventId}`);
 
         if (res.status === 404) {
           setNotFound(true);
@@ -100,6 +89,8 @@ export default function GuestClient() {
     fetchEvent();
   }, [eventId]);
 
+  /* ---------------- GUEST LOOKUP (via Next API) ---------------- */
+
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
     if (!guestName.trim()) return;
@@ -110,7 +101,7 @@ export default function GuestClient() {
 
     try {
       const res = await fetch(
-        `${BASE_URL}/api/public/event/${eventId}/guest?name=${encodeURIComponent(
+        `/api/guest/guest?eventId=${eventId}&name=${encodeURIComponent(
           guestName.trim()
         )}`
       );
@@ -128,6 +119,8 @@ export default function GuestClient() {
       setGuestLoading(false);
     }
   }
+
+  /* ---------------- UI STATES ---------------- */
 
   if (loading) {
     return (
@@ -160,6 +153,8 @@ export default function GuestClient() {
       </div>
     );
   }
+
+  /* ---------------- RENDER ---------------- */
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
