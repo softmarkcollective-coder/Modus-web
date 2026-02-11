@@ -1,90 +1,90 @@
 export default function Page() {
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white px-4 py-6">
+    <div className="min-h-screen bg-[#0b1120] text-white px-4 py-6 flex items-center">
+      <div className="max-w-md w-full mx-auto space-y-6">
 
-      <div className="max-w-xl mx-auto space-y-6">
-
-        {/* Hero image */}
-        <div className="rounded-2xl overflow-hidden h-40 md:h-56 bg-slate-800 flex items-center justify-center text-gray-500 text-sm">
-          Event Image
-        </div>
-
-        {/* Event title */}
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold">Next Big Party</h1>
-          <p className="text-xs uppercase tracking-widest text-gray-400">
+        {/* Title */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Next Big Party
+          </h1>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
             Find your table
           </p>
         </div>
 
         {/* Search */}
-        <div className="flex gap-3">
+        <div className="space-y-4">
+
           <input
-            className="flex-1 bg-slate-800 rounded-xl px-4 py-3 text-sm"
+            className="
+              w-full
+              bg-[#111827]
+              rounded-2xl
+              px-5
+              py-4
+              text-center
+              text-lg
+              border
+              border-[#d4af37]/40
+              focus:outline-none
+              focus:ring-2
+              focus:ring-[#e6c76b]
+              transition
+            "
             placeholder="Enter your name"
           />
-          <button className="bg-yellow-400 text-black px-4 rounded-xl font-semibold text-sm">
+
+          <button
+            className="
+              w-full
+              py-4
+              rounded-2xl
+              font-semibold
+              text-black
+              text-lg
+              bg-gradient-to-r
+              from-[#e6c76b]
+              via-[#f5e6a3]
+              to-[#c9a227]
+              shadow-lg
+              hover:brightness-110
+              transition
+            "
+          >
             Search
           </button>
+
         </div>
 
         {/* Result card */}
-        <div className="bg-slate-800 rounded-2xl p-5 text-center space-y-2">
-          <p className="text-gray-400 text-xs uppercase tracking-wider">
-            Welcome
-          </p>
-          <h2 className="text-lg font-semibold">Alex Scott</h2>
-          <p className="text-3xl font-bold text-yellow-400">
+        <div className="bg-[#111827] rounded-3xl p-6 text-center shadow-xl border border-white/5">
+          <p className="text-gray-400 text-sm">Welcome</p>
+          <h2 className="text-xl font-medium">Alex Scott</h2>
+          <p className="text-4xl font-bold mt-3 bg-gradient-to-r from-[#e6c76b] via-[#f5e6a3] to-[#c9a227] bg-clip-text text-transparent">
             Table 1
           </p>
         </div>
 
-        {/* Quick links */}
-        <div className="grid grid-cols-3 gap-3 text-center text-xs">
+        {/* Info cards */}
+        <div className="grid grid-cols-1 gap-4">
 
-          <div className="bg-slate-800 p-3 rounded-xl">
-            <h3 className="font-semibold">Menu</h3>
+          <div className="bg-[#111827] p-4 rounded-2xl border border-white/5 hover:border-[#e6c76b]/40 transition">
+            <h3 className="font-medium">Menu</h3>
+            <p className="text-sm text-gray-400">View dinner menu</p>
           </div>
 
-          <div className="bg-slate-800 p-3 rounded-xl">
-            <h3 className="font-semibold">Agenda</h3>
+          <div className="bg-[#111827] p-4 rounded-2xl border border-white/5 hover:border-[#e6c76b]/40 transition">
+            <h3 className="font-medium">Agenda</h3>
+            <p className="text-sm text-gray-400">See evening program</p>
           </div>
 
-          <div className="bg-slate-800 p-3 rounded-xl">
-            <h3 className="font-semibold">Seating</h3>
-          </div>
-
-        </div>
-
-        {/* Visual seating layout */}
-        <div className="bg-slate-800 rounded-2xl p-6">
-
-          <h3 className="text-sm font-semibold mb-4 text-center">
-            Room Layout
-          </h3>
-
-          <div className="grid grid-cols-3 gap-4 justify-items-center">
-
-            {[1,2,3,4,5,6].map((table) => (
-              <div
-                key={table}
-                className={`w-14 h-14 rounded-full flex items-center justify-center text-xs font-bold
-                ${table === 1
-                  ? "bg-yellow-400 text-black"
-                  : "bg-slate-700 text-white"
-                }`}
-              >
-                {table}
-              </div>
-            ))}
-
+          <div className="bg-[#111827] p-4 rounded-2xl border border-white/5 hover:border-[#e6c76b]/40 transition">
+            <h3 className="font-medium">Seating Plan</h3>
+            <p className="text-sm text-gray-400">View full layout</p>
           </div>
 
         </div>
-
-        <p className="text-center text-xs text-gray-500">
-          7 tables at this event
-        </p>
 
       </div>
     </div>
