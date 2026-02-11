@@ -56,16 +56,14 @@ export default function GuestClient() {
 
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/guest/event/${eventId}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`/api/guest/event/${eventId}`);
 
         if (res.status === 404) {
           setNotFound(true);
           return;
         }
 
-        const data = await res.json();
+        const data = (await res.json()) as EventData;
         setEvent(data);
       } catch {
         setError("Network error");
@@ -125,7 +123,6 @@ export default function GuestClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
-
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
         {/* Hero Image */}
@@ -140,7 +137,7 @@ export default function GuestClient() {
           </div>
         )}
 
-        {/* Event Name */}
+        {/* Event Title */}
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.4em] text-neutral-500">
             {event.name}
@@ -153,7 +150,6 @@ export default function GuestClient() {
 
         {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
-
           <input
             type="text"
             value={guestName}
@@ -174,12 +170,10 @@ export default function GuestClient() {
           >
             {guestLoading ? "..." : "Show my table"}
           </button>
-
         </form>
 
-        {/* RESULT */}
+        {/* Result */}
         {guestResult?.found && guestResult.guest.table !== null && (
-
           <div className="space-y-8">
 
             {/* Table Highlight */}
@@ -201,7 +195,6 @@ export default function GuestClient() {
 
               <div className="relative h-72 bg-black rounded-2xl">
                 {event.layout.tables.map((table) => {
-
                   const isActive = table.id === guestResult.guest.table;
 
                   return (
@@ -225,19 +218,18 @@ export default function GuestClient() {
               </div>
             </div>
 
-            {/* Host Message (ONLY from Vibecode) */}
+            {/* Host Message */}
             {event.guestNote && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
                 {event.guestNote}
               </div>
             )}
 
-            {/* Menu (ONLY from Vibecode) */}
+            {/* Menu */}
             {event.menu && event.menu.length > 0 && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
-
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                  Menu
+                  Party Menu
                 </h3>
 
                 <ul className="space-y-3 text-neutral-300">
@@ -245,19 +237,23 @@ export default function GuestClient() {
                     <li key={index}>{item}</li>
                   ))}
                 </ul>
-
               </div>
             )}
 
           </div>
         )}
 
-        {/* Not Found */}
+        {/* Guest Not Found */}
         {guestResult && !guestResult.found && (
           <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-400">
             Guest not found. Please try again.
           </div>
         )}
+
+        {/* Footer */}
+        <div className="text-neutral-600 text-sm">
+          {event.layout.tables.length} tables at this event
+        </div>
 
       </div>
     </div>
