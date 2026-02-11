@@ -157,73 +157,77 @@ export default function GuestClient() {
   /* ---------------- RENDER ---------------- */
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-black text-white px-6 py-12">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-black text-white px-6 py-16">
+      <div className="max-w-3xl mx-auto">
 
-        {/* Event Image */}
+        {/* Hero Image */}
         {event.image && (
-          <img
-            src={event.image}
-            alt={event.name}
-            className="w-full h-64 object-cover rounded-2xl mb-8 shadow-xl"
-          />
+          <div className="relative mb-12">
+            <img
+              src={event.image}
+              alt={event.name}
+              className="w-full h-72 object-cover rounded-3xl shadow-2xl"
+            />
+            <div className="absolute inset-0 bg-black/30 rounded-3xl" />
+          </div>
         )}
 
         {/* Event Title */}
-        <h1 className="text-4xl font-semibold text-center mb-10 tracking-tight">
+        <h1 className="text-5xl font-semibold text-center mb-14 tracking-tight">
           {event.name}
         </h1>
 
-        {/* Search Box */}
-        <form onSubmit={handleGuestLookup} className="mb-10">
+        {/* Search Section */}
+        <form onSubmit={handleGuestLookup} className="mb-14">
           <label
             htmlFor="guestName"
-            className="block text-sm uppercase tracking-wider text-neutral-400 mb-3"
+            className="block text-xs uppercase tracking-widest text-neutral-500 mb-4 text-center"
           >
             Find your table
           </label>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-4">
             <input
               id="guestName"
               type="text"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               placeholder="Enter your name"
-              className="flex-1 px-5 py-3 rounded-xl bg-neutral-800 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white"
+              className="flex-1 px-6 py-4 rounded-2xl bg-neutral-800 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white text-lg"
             />
 
             <button
               type="submit"
               disabled={guestLoading || !guestName.trim()}
-              className="px-6 py-3 rounded-xl bg-yellow-400 text-black font-medium hover:bg-yellow-300 transition disabled:opacity-40"
+              className="px-8 py-4 rounded-2xl bg-yellow-400 text-black font-semibold text-lg hover:bg-yellow-300 active:scale-95 transition-all duration-150 shadow-lg disabled:opacity-40"
             >
               {guestLoading ? "..." : "Search"}
             </button>
           </div>
         </form>
 
-        {/* Guest Error */}
+        {/* Error */}
         {guestError && (
-          <div className="p-4 bg-red-900/40 text-red-400 rounded-xl mb-6">
+          <div className="p-5 bg-red-900/40 text-red-400 rounded-2xl mb-8 text-center">
             {guestError}
           </div>
         )}
 
-        {/* Guest Result */}
+        {/* Result Card */}
         {guestResult && (
-          <div className="p-8 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-lg text-center">
+          <div className="p-12 bg-neutral-900/80 backdrop-blur border border-neutral-800 rounded-3xl shadow-2xl text-center transition-all">
             {guestResult.found ? (
               <>
-                <p className="text-xl text-neutral-400 mb-2">
+                <p className="text-neutral-400 uppercase tracking-widest text-sm mb-3">
                   Welcome
                 </p>
-                <p className="text-2xl font-semibold mb-4">
+
+                <p className="text-3xl font-semibold mb-8">
                   {guestResult.guest.name}
                 </p>
 
                 {guestResult.guest.table !== null ? (
-                  <div className="text-5xl font-bold text-yellow-400">
+                  <div className="text-6xl font-bold text-yellow-400">
                     Table {guestResult.guest.table}
                   </div>
                 ) : (
@@ -240,8 +244,8 @@ export default function GuestClient() {
           </div>
         )}
 
-        {/* Footer Info */}
-        <div className="mt-12 text-center text-neutral-500 text-sm">
+        {/* Footer */}
+        <div className="mt-16 text-center text-neutral-600 text-sm">
           {event.layout.tables.length} tables at this event
         </div>
       </div>
