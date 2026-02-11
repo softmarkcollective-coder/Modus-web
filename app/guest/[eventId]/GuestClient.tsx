@@ -14,6 +14,9 @@ interface EventData {
   id: string;
   name: string;
   image: string | null;
+  date?: string | null;
+  guestNote?: string | null;
+  menu?: string[] | null;
   layout: {
     tables: Table[];
   };
@@ -61,7 +64,7 @@ export default function GuestClient() {
           return;
         }
 
-        const data = (await res.json()) as EventData;
+        const data = await res.json();
         setEvent(data);
       } catch {
         setError("Network error");
@@ -227,26 +230,29 @@ export default function GuestClient() {
 
             </div>
 
-            {/* Host Message */}
-            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
-              We are so excited to celebrate with you tonight.
-              Enjoy the evening ✨
-            </div>
+            {/* Host Message – ONLY from Vibecode */}
+            {event.guestNote && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+                {event.guestNote}
+              </div>
+            )}
 
-            {/* Menu */}
-            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+            {/* Menu – ONLY from Vibecode */}
+            {event.menu && event.menu.length > 0 && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
 
-              <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                Party Menu
-              </h3>
+                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                  Party Menu
+                </h3>
 
-              <ul className="space-y-3 text-neutral-300">
-                <li>Oysters</li>
-                <li>Steak</li>
-                <li>Dessert</li>
-              </ul>
+                <ul className="space-y-3 text-neutral-300">
+                  {event.menu.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
 
-            </div>
+              </div>
+            )}
 
           </div>
         )}
