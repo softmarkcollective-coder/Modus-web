@@ -1,4 +1,4 @@
-"Use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
@@ -14,6 +14,8 @@ interface EventData {
   id: string;
   name: string;
   image: string | null;
+  guestNote?: string | null;
+  menu?: string[] | null;
   layout: {
     tables: Table[];
   };
@@ -54,14 +56,16 @@ export default function GuestClient() {
 
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/guest/event/${eventId}`);
+        const res = await fetch(`/api/guest/event/${eventId}`, {
+          cache: "no-store",
+        });
 
         if (res.status === 404) {
           setNotFound(true);
           return;
         }
 
-        const data = (await res.json()) as EventData;
+        const data = await res.json();
         setEvent(data);
       } catch {
         setError("Network error");
@@ -136,7 +140,7 @@ export default function GuestClient() {
           </div>
         )}
 
-        {/* Event Title */}
+        {/* Event Name */}
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.4em] text-neutral-500">
             {event.name}
@@ -173,14 +177,13 @@ export default function GuestClient() {
 
         </form>
 
-        {/* Result */}
+        {/* RESULT */}
         {guestResult?.found && guestResult.guest.table !== null && (
 
           <div className="space-y-8">
 
             {/* Table Highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
-
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
               </p>
@@ -188,18 +191,15 @@ export default function GuestClient() {
               <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
                 Table {guestResult.guest.table}
               </div>
-
             </div>
 
             {/* Seating Layout */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
 
               <div className="relative h-72 bg-black rounded-2xl">
-
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
@@ -222,46 +222,42 @@ export default function GuestClient() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Host Message (ONLY from Vibecode) */}
+            {event.guestNote && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+                {event.guestNote}
+              </div>
+            )}
+
+            {/* Menu (ONLY from Vibecode) */}
+            {event.menu && event.menu.length > 0 && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+
+                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                  Menu
+                </h3>
+
+                <ul className="space-y-3 text-neutral-300">
+                  {event.menu.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
 
               </div>
-
-            </div>
-
-            {/* Host Message */}
-            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
-              We are so excited to celebrate with you tonight.
-              Enjoy the evening ✨
-            </div>
-
-            {/* Menu */}
-            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
-
-              <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                Party Menu
-              </h3>
-
-              <ul className="space-y-3 text-neutral-300">
-                <li>Oysters</li>
-                <li>Steak</li>
-                <li>Dessert</li>
-              </ul>
-
-            </div>
+            )}
 
           </div>
         )}
 
-        {/* Guest Not Found */}
+        {/* Not Found */}
         {guestResult && !guestResult.found && (
           <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-400">
             Guest not found. Please try again.
           </div>
         )}
-
-        {/* Footer */}
-        <div className="text-neutral-600 text-sm">
-          {event.layout.tables.length} tables at this event
-        </div>
 
       </div>
     </div>
