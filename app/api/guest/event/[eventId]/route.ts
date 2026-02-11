@@ -8,16 +8,36 @@ export async function GET(
 ) {
   try {
     const res = await fetch(
-      `${BASE_URL}/api/public/event/${params.eventId}`
+      `${BASE_URL}/api/public/event/${params.eventId}`,
+      { cache: "no-store" }
     );
 
-    const text = await res.text();
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: "Event not found" },
+        { status: res.status }
+      );
+    }
 
-    return new NextResponse(text, {
-      status: res.status,
-      headers: { "Content-Type": "application/json" },
+    const data = await res.json();
+
+    // 🔎 Debug (kan fjernes senere)
+    console.log("VIBECODE EVENT RESPONSE:", data);
+
+    return NextResponse.json({
+      id: data.id,
+      name: data.name,
+      image: data.image ?? null,
+      date: data.date ?? null,
+      guestNote: data.guestNote ?? null,
+      menu: data.menu ?? [],
+      layout: {
+        tables: data.layout?.tables ?? [],
+      },
     });
   } catch (err) {
+    console.error("EVENT FETCH ERROR:", err);
+
     return NextResponse.json(
       { error: "Failed to fetch event" },
       { status: 500 }
