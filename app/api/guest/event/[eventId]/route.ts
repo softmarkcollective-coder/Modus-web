@@ -21,20 +21,9 @@ export async function GET(
 
     const data = await res.json();
 
-    // 🔎 Debug (kan fjernes senere)
-    console.log("VIBECODE EVENT RESPONSE:", data);
+    // ⚠️ Returnér ALT som Vibecode sender
+    return NextResponse.json(data);
 
-    return NextResponse.json({
-      id: data.id,
-      name: data.name,
-      image: data.image ?? null,
-      date: data.date ?? null,
-      guestNote: data.guestNote ?? null,
-      menu: data.menu ?? [],
-      layout: {
-        tables: data.layout?.tables ?? [],
-      },
-    });
   } catch (err) {
     console.error("EVENT FETCH ERROR:", err);
 
