@@ -101,7 +101,7 @@ export default function GuestClient() {
 
     try {
       const res = await fetch(
-        `/api/guest/guest?eventId=${eventId}&name=${encodeURIComponent(
+        `/api/guest/event/${eventId}/guest?name=${encodeURIComponent(
           guestName.trim()
         )}`
       );
