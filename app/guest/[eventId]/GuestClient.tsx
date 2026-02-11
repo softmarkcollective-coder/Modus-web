@@ -32,7 +32,6 @@ interface GuestNotFoundResponse {
 }
 
 type GuestResponse = GuestFoundResponse | GuestNotFoundResponse;
-type EventError = { error: string };
 
 export default function GuestClient() {
   const params = useParams();
@@ -47,6 +46,8 @@ export default function GuestClient() {
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
+
+  /* ---------------- EVENT FETCH ---------------- */
 
   useEffect(() => {
     if (!eventId) return;
@@ -81,6 +82,8 @@ export default function GuestClient() {
     fetchEvent();
   }, [eventId]);
 
+  /* ---------------- GUEST LOOKUP ---------------- */
+
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
     if (!guestName.trim()) return;
@@ -110,6 +113,8 @@ export default function GuestClient() {
     }
   }
 
+  /* ---------------- UI STATES ---------------- */
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black text-white">
@@ -126,82 +131,90 @@ export default function GuestClient() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-black text-white px-6 py-16">
-      <div className="max-w-3xl mx-auto">
+  /* ---------------- RENDER ---------------- */
 
-        {/* TEST DEPLOY MARKER */}
-        <div className="text-center text-red-500 mb-6 text-sm tracking-widest">
-          DEPLOY TEST ACTIVE
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white flex items-center justify-center px-6 py-20">
+      <div className="w-full max-w-2xl text-center space-y-16">
+
+        {/* Deploy Marker */}
+        <div className="text-red-500 text-xs tracking-[0.3em] uppercase opacity-70">
+          Deploy Test Active
         </div>
 
+        {/* Hero Image */}
         {event.image && (
-          <div className="relative mb-12">
+          <div className="relative">
             <img
               src={event.image}
               alt={event.name}
-              className="w-full h-72 object-cover rounded-3xl shadow-2xl"
+              className="w-full h-80 object-cover rounded-[2rem] shadow-[0_40px_120px_rgba(0,0,0,0.6)]"
             />
-            <div className="absolute inset-0 bg-black/30 rounded-3xl" />
+            <div className="absolute inset-0 bg-black/40 rounded-[2rem]" />
           </div>
         )}
 
-        <h1 className="text-5xl font-semibold text-center mb-14 tracking-tight">
+        {/* Event Title */}
+        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">
           {event.name}
         </h1>
 
-        <form onSubmit={handleGuestLookup} className="mb-14">
-          <label
-            htmlFor="guestName"
-            className="block text-xs uppercase tracking-widest text-neutral-500 mb-4 text-center"
-          >
-            Find your table
-          </label>
+        {/* Search */}
+        <form onSubmit={handleGuestLookup} className="space-y-6">
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <p className="text-sm uppercase tracking-[0.4em] text-neutral-500">
+            Find your table
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+
             <input
               id="guestName"
               type="text"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               placeholder="Enter your name"
-              className="flex-1 px-6 py-4 rounded-2xl bg-neutral-800 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white text-lg"
+              className="w-full sm:min-w-[320px] px-6 py-4 rounded-2xl bg-neutral-900 border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white text-lg text-center"
             />
 
             <button
               type="submit"
               disabled={guestLoading || !guestName.trim()}
-              className="px-8 py-4 rounded-2xl bg-yellow-400 text-black font-semibold text-lg hover:bg-yellow-300 active:scale-95 transition-all duration-150 shadow-lg disabled:opacity-40"
+              className="px-10 py-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-300 text-black font-semibold text-lg shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-40"
             >
               {guestLoading ? "..." : "Search"}
             </button>
+
           </div>
         </form>
 
+        {/* Error */}
         {guestError && (
-          <div className="p-5 bg-red-900/40 text-red-400 rounded-2xl mb-8 text-center">
+          <div className="p-6 bg-red-900/40 text-red-400 rounded-2xl">
             {guestError}
           </div>
         )}
 
+        {/* Result */}
         {guestResult && (
-          <div className="p-12 bg-neutral-900/80 backdrop-blur border border-neutral-800 rounded-3xl shadow-2xl text-center">
+          <div className="p-12 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-[2rem] shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
+
             {guestResult.found ? (
               <>
-                <p className="text-neutral-400 uppercase tracking-widest text-sm mb-3">
+                <p className="text-neutral-500 uppercase tracking-[0.4em] text-xs mb-4">
                   Welcome
                 </p>
 
-                <p className="text-3xl font-semibold mb-8">
+                <p className="text-3xl font-semibold mb-10">
                   {guestResult.guest.name}
                 </p>
 
                 {guestResult.guest.table !== null ? (
-                  <div className="text-6xl font-bold text-yellow-400">
+                  <div className="text-6xl font-bold bg-gradient-to-r from-yellow-400 to-amber-300 bg-clip-text text-transparent">
                     Table {guestResult.guest.table}
                   </div>
                 ) : (
-                  <p className="text-neutral-500 mt-4">
+                  <p className="text-neutral-500">
                     No table assigned
                   </p>
                 )}
@@ -211,12 +224,15 @@ export default function GuestClient() {
                 Guest not found. Please check your name and try again.
               </p>
             )}
+
           </div>
         )}
 
-        <div className="mt-16 text-center text-neutral-600 text-sm">
+        {/* Footer */}
+        <div className="text-neutral-600 text-sm">
           {event.layout.tables.length} tables at this event
         </div>
+
       </div>
     </div>
   );
