@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXT_PUBLIC_VIBECODE_API_BASE;
+const BASE_URL = process.env.NEXT_PUBLIC_VIBECODE_API_BASE!;
 
 export async function GET(
   _req: Request,
@@ -11,10 +11,13 @@ export async function GET(
       `${BASE_URL}/api/public/event/${params.eventId}`
     );
 
-    const data = await res.json();
+    const text = await res.text();
 
-    return NextResponse.json(data, { status: res.status });
-  } catch (error) {
+    return new NextResponse(text, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
     return NextResponse.json(
       { error: "Failed to fetch event" },
       { status: 500 }
