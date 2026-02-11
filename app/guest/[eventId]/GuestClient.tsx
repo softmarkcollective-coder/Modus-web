@@ -48,7 +48,7 @@ export default function GuestClient() {
   const [guestLoading, setGuestLoading] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
 
-  /* ---------------- EVENT FETCH (via Next API) ---------------- */
+  /* ---------------- EVENT FETCH ---------------- */
 
   useEffect(() => {
     if (!eventId) return;
@@ -89,7 +89,7 @@ export default function GuestClient() {
     fetchEvent();
   }, [eventId]);
 
-  /* ---------------- GUEST LOOKUP (via Next API) ---------------- */
+  /* ---------------- GUEST LOOKUP ---------------- */
 
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -124,32 +124,32 @@ export default function GuestClient() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg">Loading event...</p>
+      <div className="flex items-center justify-center min-h-screen bg-black text-white">
+        <p className="text-lg animate-pulse">Loading event...</p>
       </div>
     );
   }
 
   if (notFound) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-red-600">Event not found</p>
+      <div className="flex items-center justify-center min-h-screen bg-black text-white">
+        <p className="text-lg text-red-500">Event not found</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-red-600">Error: {error}</p>
+      <div className="flex items-center justify-center min-h-screen bg-black text-white">
+        <p className="text-lg text-red-500">Error: {error}</p>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-red-600">No event data</p>
+      <div className="flex items-center justify-center min-h-screen bg-black text-white">
+        <p className="text-lg text-red-500">No event data</p>
       </div>
     );
   }
@@ -157,72 +157,92 @@ export default function GuestClient() {
   /* ---------------- RENDER ---------------- */
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-black text-white px-6 py-12">
+      <div className="max-w-2xl mx-auto">
+
+        {/* Event Image */}
         {event.image && (
           <img
             src={event.image}
             alt={event.name}
-            className="w-full h-48 object-cover rounded-lg mb-4"
+            className="w-full h-64 object-cover rounded-2xl mb-8 shadow-xl"
           />
         )}
 
-        <h1 className="text-2xl font-bold mb-6 text-center">{event.name}</h1>
+        {/* Event Title */}
+        <h1 className="text-4xl font-semibold text-center mb-10 tracking-tight">
+          {event.name}
+        </h1>
 
-        <form onSubmit={handleGuestLookup} className="mb-6">
-          <label htmlFor="guestName" className="block text-sm font-medium mb-2">
+        {/* Search Box */}
+        <form onSubmit={handleGuestLookup} className="mb-10">
+          <label
+            htmlFor="guestName"
+            className="block text-sm uppercase tracking-wider text-neutral-400 mb-3"
+          >
             Find your table
           </label>
-          <div className="flex gap-2">
+
+          <div className="flex gap-3">
             <input
               id="guestName"
               type="text"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               placeholder="Enter your name"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+              className="flex-1 px-5 py-3 rounded-xl bg-neutral-800 border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white"
             />
+
             <button
               type="submit"
               disabled={guestLoading || !guestName.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
+              className="px-6 py-3 rounded-xl bg-yellow-400 text-black font-medium hover:bg-yellow-300 transition disabled:opacity-40"
             >
               {guestLoading ? "..." : "Search"}
             </button>
           </div>
         </form>
 
+        {/* Guest Error */}
         {guestError && (
-          <div className="p-4 bg-red-100 text-red-700 rounded-lg mb-4">
-            Error: {guestError}
+          <div className="p-4 bg-red-900/40 text-red-400 rounded-xl mb-6">
+            {guestError}
           </div>
         )}
 
+        {/* Guest Result */}
         {guestResult && (
-          <div className="p-4 bg-white rounded-lg shadow">
+          <div className="p-8 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-lg text-center">
             {guestResult.found ? (
-              <div className="text-center">
-                <p className="text-lg font-medium">{guestResult.guest.name}</p>
+              <>
+                <p className="text-xl text-neutral-400 mb-2">
+                  Welcome
+                </p>
+                <p className="text-2xl font-semibold mb-4">
+                  {guestResult.guest.name}
+                </p>
+
                 {guestResult.guest.table !== null ? (
-                  <p className="text-3xl font-bold text-blue-600 mt-2">
+                  <div className="text-5xl font-bold text-yellow-400">
                     Table {guestResult.guest.table}
-                  </p>
+                  </div>
                 ) : (
-                  <p className="text-gray-500 mt-2">No table assigned</p>
+                  <p className="text-neutral-500 mt-4">
+                    No table assigned
+                  </p>
                 )}
-              </div>
+              </>
             ) : (
-              <p className="text-center text-gray-600">
+              <p className="text-neutral-400">
                 Guest not found. Please check your name and try again.
               </p>
             )}
           </div>
         )}
 
-        <div className="mt-8">
-          <p className="text-sm text-gray-500 text-center">
-            {event.layout.tables.length} tables at this event
-          </p>
+        {/* Footer Info */}
+        <div className="mt-12 text-center text-neutral-500 text-sm">
+          {event.layout.tables.length} tables at this event
         </div>
       </div>
     </div>
