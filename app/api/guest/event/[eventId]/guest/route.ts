@@ -7,6 +7,13 @@ export async function GET(
   { params }: { params: { eventId: string } }
 ) {
   try {
+    if (!BASE_URL) {
+      return NextResponse.json(
+        { error: "VIBECODE_API_BASE not configured" },
+        { status: 500 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const name = searchParams.get("name");
 
@@ -17,16 +24,21 @@ export async function GET(
       );
     }
 
-    const res = await fetch(
-      `${BASE_URL}/api/public/event/${params.eventId}/guest?name=${encodeURIComponent(
-        name
-      )}`
-    );
+    const vibecodeUrl = `${BASE_URL}/api/public/event/${params.eventId}/guest?name=${encodeURIComponent(
+      name
+    )}`;
 
-    const data = await res.json();
+    const res = await fetch(vibecodeUrl);
 
-    return NextResponse.json(data, { status: res.status });
+    const text = await res.text();
+
+    return new NextResponse(text, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
+    console.error("Guest fetch error:", error);
+
     return NextResponse.json(
       { error: "Failed to fetch guest" },
       { status: 500 }
