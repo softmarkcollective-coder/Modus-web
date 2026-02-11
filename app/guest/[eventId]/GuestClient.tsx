@@ -120,17 +120,17 @@ export default function GuestClient() {
   /* ---------------- RENDER ---------------- */
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white flex items-start justify-center px-6 pt-10 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
 
-      <div className="w-full max-w-xl text-center space-y-10">
+      <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
-        {/* Hero Image (smaller) */}
+        {/* Hero Image */}
         {event.image && (
           <div className="relative">
             <img
               src={event.image}
               alt={event.name}
-              className="w-full h-56 object-cover rounded-3xl shadow-2xl"
+              className="w-full h-52 object-cover rounded-3xl shadow-2xl"
             />
             <div className="absolute inset-0 bg-black/40 rounded-3xl" />
           </div>
@@ -138,97 +138,123 @@ export default function GuestClient() {
 
         {/* Event Title */}
         <div className="space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-semibold">
-            {event.name}
-          </h1>
-
           <p className="text-xs uppercase tracking-[0.4em] text-neutral-500">
-            Find your table
+            {event.name}
           </p>
+
+          <h1 className="text-3xl sm:text-4xl font-semibold">
+            Find your seat
+          </h1>
         </div>
 
         {/* Search */}
-        <form onSubmit={handleGuestLookup} className="space-y-6">
+        <form onSubmit={handleGuestLookup} className="space-y-5">
 
           <input
             type="text"
             value={guestName}
             onChange={(e) => setGuestName(e.target.value)}
             placeholder="Enter your name"
-            className="w-full px-6 py-4 rounded-2xl bg-neutral-900 border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#d6b25e] text-white text-lg text-center"
+            className="w-full px-6 py-4 rounded-2xl bg-neutral-900 border border-neutral-800
+                       focus:outline-none focus:ring-2 focus:ring-[#d6b25e]
+                       text-white text-lg text-center"
           />
 
           <button
             type="submit"
             disabled={guestLoading || !guestName.trim()}
             className="w-full py-4 rounded-2xl font-semibold text-lg text-black
-                       bg-gradient-to-r from-[#e6c77a] via-[#d6b25e] to-[#c9a13f]
-                       shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+                       bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f]
+                       shadow-[0_10px_30px_rgba(214,178,94,0.35)]
+                       hover:scale-[1.02] active:scale-95 transition-all"
           >
-            {guestLoading ? "..." : "Search"}
+            {guestLoading ? "..." : "Show my table"}
           </button>
 
         </form>
 
         {/* Result */}
-        {guestResult && (
-          <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
+        {guestResult?.found && guestResult.guest.table !== null && (
 
-            {guestResult.found ? (
-              <>
-                <p className="text-neutral-500 uppercase tracking-[0.3em] text-xs mb-3">
-                  Welcome
-                </p>
+          <div className="space-y-8">
 
-                <p className="text-2xl font-semibold mb-6">
-                  {guestResult.guest.name}
-                </p>
+            {/* Table Highlight */}
+            <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
 
-                {guestResult.guest.table !== null ? (
-                  <div className="text-5xl font-bold bg-gradient-to-r from-[#e6c77a] via-[#d6b25e] to-[#c9a13f] bg-clip-text text-transparent">
-                    Table {guestResult.guest.table}
-                  </div>
-                ) : (
-                  <p className="text-neutral-500">
-                    No table assigned
-                  </p>
-                )}
-
-              </>
-            ) : (
-              <p className="text-neutral-400">
-                Guest not found. Please try again.
+              <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
+                You are seated at
               </p>
-            )}
+
+              <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
+                Table {guestResult.guest.table}
+              </div>
+
+            </div>
+
+            {/* Seating Layout */}
+            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
+
+              <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
+                Seating Plan
+              </p>
+
+              <div className="relative h-72 bg-black rounded-2xl">
+
+                {event.layout.tables.map((table) => {
+
+                  const isActive = table.id === guestResult.guest.table;
+
+                  return (
+                    <div
+                      key={table.id}
+                      className={`absolute w-14 h-14 rounded-full flex items-center justify-center text-sm font-semibold transition-all
+                        ${isActive
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                          : "bg-neutral-700 text-neutral-300"
+                        }`}
+                      style={{
+                        left: `${table.x}%`,
+                        top: `${table.y}%`,
+                        transform: "translate(-50%, -50%)"
+                      }}
+                    >
+                      {table.id}
+                    </div>
+                  );
+                })}
+
+              </div>
+
+            </div>
+
+            {/* Host Message */}
+            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+              We are so excited to celebrate with you tonight.
+              Enjoy the evening ✨
+            </div>
+
+            {/* Menu */}
+            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+
+              <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                Party Menu
+              </h3>
+
+              <ul className="space-y-3 text-neutral-300">
+                <li>Oysters</li>
+                <li>Steak</li>
+                <li>Dessert</li>
+              </ul>
+
+            </div>
 
           </div>
         )}
 
-        {/* Seating visual placeholder */}
-        {guestResult?.found && guestResult.guest.table !== null && (
-          <div className="mt-6 p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-            <p className="text-sm text-neutral-500 mb-4 uppercase tracking-widest">
-              Seating Plan
-            </p>
-
-            <div className="relative h-64 bg-black rounded-2xl">
-              {event.layout.tables.map((table) => (
-                <div
-                  key={table.id}
-                  className={`absolute w-14 h-14 rounded-full flex items-center justify-center text-sm font-semibold
-                  ${table.id === guestResult.guest.table
-                      ? "bg-gradient-to-r from-[#e6c77a] to-[#c9a13f] text-black"
-                      : "bg-neutral-700 text-white"}`}
-                  style={{
-                    left: `${table.x}%`,
-                    top: `${table.y}%`,
-                    transform: "translate(-50%, -50%)"
-                  }}
-                >
-                  {table.id}
-                </div>
-              ))}
-            </div>
+        {/* Guest Not Found */}
+        {guestResult && !guestResult.found && (
+          <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-400">
+            Guest not found. Please try again.
           </div>
         )}
 
