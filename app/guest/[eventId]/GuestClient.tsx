@@ -14,6 +14,8 @@ interface EventData {
   id: string;
   name: string;
   image: string | null;
+  hostMessage?: string | null;
+  menu?: string[] | null;
   layout: {
     tables: Table[];
   };
@@ -39,13 +41,11 @@ export default function GuestClient() {
 
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   const [guestName, setGuestName] = useState("");
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
-  const [guestError, setGuestError] = useState<string | null>(null);
 
   /* ---------------- EVENT FETCH ---------------- */
 
@@ -63,8 +63,6 @@ export default function GuestClient() {
 
         const data = (await res.json()) as EventData;
         setEvent(data);
-      } catch {
-        setError("Network error");
       } finally {
         setLoading(false);
       }
@@ -80,7 +78,6 @@ export default function GuestClient() {
     if (!guestName.trim()) return;
 
     setGuestLoading(true);
-    setGuestError(null);
     setGuestResult(null);
 
     try {
@@ -92,16 +89,12 @@ export default function GuestClient() {
 
       const data = (await res.json()) as GuestResponse;
       setGuestResult(data);
-    } catch {
-      setGuestError("Network error");
     } finally {
       setGuestLoading(false);
     }
   }
 
-  /* ---------------- UI STATES ---------------- */
-
-  if (loading) {
+  if (loading || !event) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black text-white">
         Loading event...
@@ -109,7 +102,7 @@ export default function GuestClient() {
     );
   }
 
-  if (notFound || error || !event) {
+  if (notFound) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black text-white">
         Event unavailable
@@ -117,15 +110,19 @@ export default function GuestClient() {
     );
   }
 
+  /* ---------------- GRID CALCULATION ---------------- */
+
+  const maxX = Math.max(...event.layout.tables.map(t => t.x));
+  const maxY = Math.max(...event.layout.tables.map(t => t.y));
+
   /* ---------------- RENDER ---------------- */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
-
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
-        {/* Hero Image */}
-        {event.image && (
+        {/* Hero Image (only valid public URLs) */}
+        {event.image && event.image.startsWith("http") && (
           <div className="relative">
             <img
               src={event.image}
@@ -136,12 +133,10 @@ export default function GuestClient() {
           </div>
         )}
 
-        {/* Event Title */}
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.4em] text-neutral-500">
             {event.name}
           </p>
-
           <h1 className="text-3xl sm:text-4xl font-semibold">
             Find your seat
           </h1>
@@ -149,7 +144,6 @@ export default function GuestClient() {
 
         {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
-
           <input
             type="text"
             value={guestName}
@@ -170,30 +164,23 @@ export default function GuestClient() {
           >
             {guestLoading ? "..." : "Show my table"}
           </button>
-
         </form>
 
-        {/* Result */}
         {guestResult?.found && guestResult.guest.table !== null && (
-
           <div className="space-y-8">
 
-            {/* Table Highlight */}
+            {/* Table highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
-
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
               </p>
-
               <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
                 Table {guestResult.guest.table}
               </div>
-
             </div>
 
-            {/* Seating Layout */}
+            {/* Seating Plan */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
@@ -204,6 +191,9 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
+                  const left = (table.x / maxX) * 100;
+                  const top = (table.y / maxY) * 100;
+
                   return (
                     <div
                       key={table.id}
@@ -213,8 +203,8 @@ export default function GuestClient() {
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        left: `${table.x}%`,
-                        top: `${table.y}%`,
+                        left: `${left}%`,
+                        top: `${top}%`,
                         transform: "translate(-50%, -50%)"
                       }}
                     >
@@ -222,43 +212,34 @@ export default function GuestClient() {
                     </div>
                   );
                 })}
-
               </div>
-
             </div>
 
             {/* Host Message */}
-            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
-              We are so excited to celebrate with you tonight.
-              Enjoy the evening ✨
-            </div>
+            {event.hostMessage && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+                {event.hostMessage}
+              </div>
+            )}
 
             {/* Menu */}
-            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+            {event.menu && event.menu.length > 0 && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                  Menu
+                </h3>
 
-              <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                Party Menu
-              </h3>
-
-              <ul className="space-y-3 text-neutral-300">
-                <li>Oysters</li>
-                <li>Steak</li>
-                <li>Dessert</li>
-              </ul>
-
-            </div>
+                <ul className="space-y-3 text-neutral-300">
+                  {event.menu.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
           </div>
         )}
 
-        {/* Guest Not Found */}
-        {guestResult && !guestResult.found && (
-          <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-400">
-            Guest not found. Please try again.
-          </div>
-        )}
-
-        {/* Footer */}
         <div className="text-neutral-600 text-sm">
           {event.layout.tables.length} tables at this event
         </div>
