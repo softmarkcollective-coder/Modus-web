@@ -14,8 +14,6 @@ interface EventData {
   id: string;
   name: string;
   image: string | null;
-  hostMessage?: string;
-  menu?: string[];
   layout: {
     tables: Table[];
   };
@@ -123,6 +121,7 @@ export default function GuestClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
+
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
         {/* Hero Image */}
@@ -150,6 +149,7 @@ export default function GuestClient() {
 
         {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
+
           <input
             type="text"
             value={guestName}
@@ -170,14 +170,17 @@ export default function GuestClient() {
           >
             {guestLoading ? "..." : "Show my table"}
           </button>
+
         </form>
 
         {/* Result */}
         {guestResult?.found && guestResult.guest.table !== null && (
+
           <div className="space-y-8">
 
             {/* Table Highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
+
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
               </p>
@@ -185,16 +188,20 @@ export default function GuestClient() {
               <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
                 Table {guestResult.guest.table}
               </div>
+
             </div>
 
             {/* Seating Layout */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
+
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
 
               <div className="relative h-72 bg-black rounded-2xl">
+
                 {event.layout.tables.map((table) => {
+
                   const isActive = table.id === guestResult.guest.table;
 
                   return (
@@ -215,30 +222,32 @@ export default function GuestClient() {
                     </div>
                   );
                 })}
+
               </div>
+
             </div>
 
-            {/* Host Message (dynamic) */}
-            {event.hostMessage && (
-              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
-                {event.hostMessage}
-              </div>
-            )}
+            {/* Host Message */}
+            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+              We are so excited to celebrate with you tonight.
+              Enjoy the evening ✨
+            </div>
 
-            {/* Menu (dynamic) */}
-            {event.menu && event.menu.length > 0 && (
-              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
-                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                  Party Menu
-                </h3>
+            {/* Menu */}
+            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
 
-                <ul className="space-y-3 text-neutral-300">
-                  {event.menu.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                Party Menu
+              </h3>
+
+              <ul className="space-y-3 text-neutral-300">
+                <li>Oysters</li>
+                <li>Steak</li>
+                <li>Dessert</li>
+              </ul>
+
+            </div>
+
           </div>
         )}
 
@@ -253,6 +262,7 @@ export default function GuestClient() {
         <div className="text-neutral-600 text-sm">
           {event.layout.tables.length} tables at this event
         </div>
+
       </div>
     </div>
   );
