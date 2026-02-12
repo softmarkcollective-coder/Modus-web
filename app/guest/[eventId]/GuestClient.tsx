@@ -14,8 +14,8 @@ interface EventData {
   id: string;
   name: string;
   image: string | null;
-  guestNote?: string | null;
-  menu?: string[] | null;
+  hostMessage?: string;
+  menu?: string[];
   layout: {
     tables: Table[];
   };
@@ -56,16 +56,14 @@ export default function GuestClient() {
 
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/guest/event/${eventId}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`/api/guest/event/${eventId}`);
 
         if (res.status === 404) {
           setNotFound(true);
           return;
         }
 
-        const data = await res.json();
+        const data = (await res.json()) as EventData;
         setEvent(data);
       } catch {
         setError("Network error");
@@ -125,7 +123,6 @@ export default function GuestClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
-
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
         {/* Hero Image */}
@@ -153,7 +150,6 @@ export default function GuestClient() {
 
         {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
-
           <input
             type="text"
             value={guestName}
@@ -174,17 +170,14 @@ export default function GuestClient() {
           >
             {guestLoading ? "..." : "Show my table"}
           </button>
-
         </form>
 
         {/* Result */}
         {guestResult?.found && guestResult.guest.table !== null && (
-
           <div className="space-y-8">
 
             {/* Table Highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
-
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
               </p>
@@ -192,12 +185,10 @@ export default function GuestClient() {
               <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
                 Table {guestResult.guest.table}
               </div>
-
             </div>
 
             {/* Seating Layout */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
@@ -210,15 +201,14 @@ export default function GuestClient() {
                     <div
                       key={table.id}
                       className={`absolute w-14 h-14 rounded-full flex items-center justify-center text-sm font-semibold transition-all
-                        ${
-                          isActive
-                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
-                            : "bg-neutral-700 text-neutral-300"
+                        ${isActive
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                          : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
                         left: `${table.x}%`,
                         top: `${table.y}%`,
-                        transform: "translate(-50%, -50%)",
+                        transform: "translate(-50%, -50%)"
                       }}
                     >
                       {table.id}
@@ -228,14 +218,14 @@ export default function GuestClient() {
               </div>
             </div>
 
-            {/* Host Message from Vibecode */}
-            {event.guestNote && (
+            {/* Host Message (dynamic) */}
+            {event.hostMessage && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
-                {event.guestNote}
+                {event.hostMessage}
               </div>
             )}
 
-            {/* Menu from Vibecode */}
+            {/* Menu (dynamic) */}
             {event.menu && event.menu.length > 0 && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
@@ -249,7 +239,6 @@ export default function GuestClient() {
                 </ul>
               </div>
             )}
-
           </div>
         )}
 
@@ -264,7 +253,6 @@ export default function GuestClient() {
         <div className="text-neutral-600 text-sm">
           {event.layout.tables.length} tables at this event
         </div>
-
       </div>
     </div>
   );
