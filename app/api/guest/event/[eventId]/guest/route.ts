@@ -27,7 +27,8 @@ export async function GET(
     const res = await fetch(
       `${BASE_URL}/api/public/event/${params.eventId}/guest?name=${encodeURIComponent(
         name
-      )}`
+      )}`,
+      { cache: "no-store" } // 🔥 IMPORTANT
     );
 
     if (!res.ok) {
@@ -41,8 +42,10 @@ export async function GET(
     const data = await res.json();
 
     return NextResponse.json(data);
+
   } catch (error) {
     console.error("Guest route error:", error);
+
     return NextResponse.json(
       { error: "Failed to fetch guest" },
       { status: 500 }
