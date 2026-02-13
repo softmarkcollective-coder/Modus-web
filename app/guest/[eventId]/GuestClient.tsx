@@ -8,6 +8,7 @@ interface Table {
   x: number;
   y: number;
   shape: string;
+  orientation?: "horizontal" | "vertical";
 }
 
 interface EventData {
@@ -191,13 +192,26 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  const left = (table.x / maxX) * 100;
-                  const top = (table.y / maxY) * 100;
+                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
+                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+
+                  const isRound = table.shape === "round";
+                  const isRect = table.shape === "rect";
+                  const isVertical = table.orientation === "vertical";
+
+                  const shapeClasses = isRound
+                    ? "w-14 h-14 rounded-full"
+                    : isRect && isVertical
+                      ? "w-12 h-20 rounded-xl"
+                      : isRect
+                        ? "w-20 h-12 rounded-xl"
+                        : "w-14 h-14 rounded-full";
 
                   return (
                     <div
                       key={table.id}
-                      className={`absolute w-14 h-14 rounded-full flex items-center justify-center text-sm font-semibold transition-all
+                      className={`absolute flex items-center justify-center text-sm font-semibold transition-all
+                        ${shapeClasses}
                         ${isActive
                           ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
                           : "bg-neutral-700 text-neutral-300"
