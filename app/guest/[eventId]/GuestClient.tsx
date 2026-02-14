@@ -180,8 +180,9 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
-                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+                  // 🔥 AKSE BYTTET SÅ WEB MATCHER APP 1:1
+                  const left = maxY === 0 ? 50 : (table.y / maxY) * 100;
+                  const top = maxX === 0 ? 50 : (table.x / maxX) * 100;
 
                   const shape = table.shape?.toLowerCase();
                   const orientation = table.orientation?.toLowerCase();
