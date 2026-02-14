@@ -9,6 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
+  length?: number; // 👈 supports 1,2,3 like iOS app
 }
 
 interface EventData {
@@ -94,7 +95,7 @@ export default function GuestClient() {
       const data = (await res.json()) as GuestResponse;
       setGuestResult(data);
 
-      // Refresh event after lookup to ensure live updates
+      // refresh event for live updates
       const refreshed = await fetch(`/api/guest/event/${eventId}`, {
         cache: "no-store",
       });
@@ -128,8 +129,8 @@ export default function GuestClient() {
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
-        {/* Hero Image */}
-        {event.image && event.image.startsWith("http") && (
+        {/* Hero Image — ALWAYS render if present */}
+        {event.image && (
           <div className="relative">
             <img
               src={event.image}
@@ -176,7 +177,7 @@ export default function GuestClient() {
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
-            {/* Table Highlight */}
+            {/* Highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
@@ -186,15 +187,16 @@ export default function GuestClient() {
               </div>
             </div>
 
-            {/* Seating Plan — Column Based */}
+            {/* Seating Plan */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
 
-              <div className="bg-black rounded-2xl p-6">
+              <div className="bg-black rounded-2xl p-8">
                 {(() => {
                   const columns: Record<number, Table[]> = {};
+
                   tables.forEach((t) => {
                     if (!columns[t.x]) columns[t.x] = [];
                     columns[t.x].push(t);
@@ -209,7 +211,8 @@ export default function GuestClient() {
                   });
 
                   return (
-                    <div className="flex justify-between items-start gap-8">
+                    <div className="flex justify-between items-start gap-16">
+
                       {sortedX.map((x) => {
                         const isCenter = x === 1;
 
@@ -218,35 +221,55 @@ export default function GuestClient() {
                             key={x}
                             className={`flex ${
                               isCenter
-                                ? "flex-row items-center justify-center gap-4"
-                                : "flex-col items-center gap-4"
+                                ? "flex-row items-center justify-center gap-6"
+                                : "flex-col items-center gap-6"
                             }`}
                           >
                             {columns[x].map((table) => {
+
                               const isActive =
                                 guestResult.guest.table === table.id;
 
-                              const isRound = table.shape === "round";
-                              const isRect = table.shape === "rect";
-                              const isVertical =
-                                table.orientation === "vertical";
+                              const length = table.length ?? 1;
 
-                              const shapeClasses = isRound
-                                ? "w-14 h-14 rounded-full"
-                                : isRect && isVertical
-                                ? "w-12 h-20 rounded-xl"
-                                : isRect
-                                ? "w-20 h-12 rounded-xl"
-                                : "w-14 h-14 rounded-full";
+                              const baseRound = 56;
+                              const baseRectShort = 48;
+                              const baseRectLong = 80;
+
+                              const sizeMultiplier = length;
+
+                              let width = 56;
+                              let height = 56;
+
+                              if (table.shape === "round") {
+                                width = baseRound;
+                                height = baseRound;
+                              } else if (table.shape === "rect") {
+                                if (table.orientation === "horizontal") {
+                                  width = baseRectLong * sizeMultiplier;
+                                  height = baseRectShort;
+                                } else {
+                                  width = baseRectShort;
+                                  height = baseRectLong * sizeMultiplier;
+                                }
+                              }
 
                               return (
                                 <div
                                   key={table.id}
-                                  className={`flex items-center justify-center text-sm font-semibold transition-all
-                                    ${shapeClasses}
+                                  style={{
+                                    width,
+                                    height,
+                                  }}
+                                  className={`flex items-center justify-center text-sm font-semibold rounded-xl transition-all
+                                    ${
+                                      table.shape === "round"
+                                        ? "rounded-full"
+                                        : ""
+                                    }
                                     ${
                                       isActive
-                                        ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                                        ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_30px_rgba(214,178,94,0.8)] scale-110"
                                         : "bg-neutral-700 text-neutral-300"
                                     }`}
                                 >
