@@ -193,12 +193,9 @@ export default function GuestClient() {
                   }
 
                   if (shape === "rect") {
-                    // 🔥 Kun backend bestemmer retning
                     if (orientation === "horizontal") {
                       shapeClasses = "w-20 h-12 rounded-xl";
-                    }
-
-                    if (orientation === "vertical") {
+                    } else if (orientation === "vertical") {
                       shapeClasses = "w-12 h-20 rounded-xl";
                     }
                   }
