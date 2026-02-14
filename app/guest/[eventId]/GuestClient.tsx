@@ -8,7 +8,7 @@ interface Table {
   x: number;
   y: number;
   shape: string;
-  orientation?: string; // 🔥 løsnet for at matche backend 100%
+  orientation?: string;
 }
 
 interface EventData {
@@ -180,9 +180,8 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // 🔥 AKSE BYTTET SÅ WEB MATCHER APP 1:1
-                  const left = maxY === 0 ? 50 : (table.y / maxY) * 100;
-                  const top = maxX === 0 ? 50 : (table.x / maxX) * 100;
+                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
+                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
 
                   const shape = table.shape?.toLowerCase();
                   const orientation = table.orientation?.toLowerCase();
@@ -191,13 +190,17 @@ export default function GuestClient() {
 
                   if (shape === "round") {
                     shapeClasses = "w-14 h-14 rounded-full";
-                  } else if (shape === "rect") {
-                    shapeClasses =
-                      orientation === "vertical"
-                        ? "w-12 h-20 rounded-xl"
-                        : "w-20 h-12 rounded-xl";
-                  } else {
-                    shapeClasses = "w-14 h-14 rounded-full";
+                  }
+
+                  if (shape === "rect") {
+                    // 🔥 Kun backend bestemmer retning
+                    if (orientation === "horizontal") {
+                      shapeClasses = "w-20 h-12 rounded-xl";
+                    }
+
+                    if (orientation === "vertical") {
+                      shapeClasses = "w-12 h-20 rounded-xl";
+                    }
                   }
 
                   return (
