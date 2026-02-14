@@ -9,7 +9,6 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  length?: number; // ✅ NEW (from Vibecode)
 }
 
 interface EventData {
@@ -112,12 +111,8 @@ export default function GuestClient() {
     );
   }
 
-  /* ---------------- GRID CALCULATION ---------------- */
-
   const maxX = Math.max(...event.layout.tables.map(t => t.x));
   const maxY = Math.max(...event.layout.tables.map(t => t.y));
-
-  /* ---------------- RENDER ---------------- */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -192,40 +187,33 @@ export default function GuestClient() {
                   const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
                   const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
 
-                  const isRound = table.shape === "round";
-                  const isRect = table.shape === "rect";
+                  const isRound = table.shape?.toLowerCase() === "round";
+                  const isRect = table.shape?.toLowerCase() === "rect";
                   const isVertical = table.orientation === "vertical";
-                  const length = table.length ?? 1; // ✅ use real length
 
-                  let style: React.CSSProperties = {};
+                  let shapeClasses = "";
 
                   if (isRound) {
-                    style = { width: 56, height: 56 };
+                    shapeClasses = "w-14 h-14 rounded-full";
                   } else if (isRect) {
-                    const base = 48;
-                    if (isVertical) {
-                      style = {
-                        width: base,
-                        height: base * length
-                      };
-                    } else {
-                      style = {
-                        width: base * length,
-                        height: base
-                      };
-                    }
+                    shapeClasses = isVertical
+                      ? "w-12 h-20 rounded-xl"
+                      : "w-20 h-12 rounded-xl";
+                  } else {
+                    // fallback: treat unknown shapes as round
+                    shapeClasses = "w-14 h-14 rounded-full";
                   }
 
                   return (
                     <div
                       key={table.id}
-                      className={`absolute flex items-center justify-center text-sm font-semibold transition-all rounded-xl
+                      className={`absolute flex items-center justify-center text-sm font-semibold transition-all
+                        ${shapeClasses}
                         ${isActive
                           ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        ...style,
                         left: `${left}%`,
                         top: `${top}%`,
                         transform: "translate(-50%, -50%)"
