@@ -9,6 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
+  length?: number; // ✅ added for parity with iOS
 }
 
 interface EventData {
@@ -48,8 +49,6 @@ export default function GuestClient() {
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
 
-  /* ---------------- EVENT FETCH ---------------- */
-
   useEffect(() => {
     if (!eventId) return;
 
@@ -71,8 +70,6 @@ export default function GuestClient() {
 
     fetchEvent();
   }, [eventId]);
-
-  /* ---------------- GUEST LOOKUP ---------------- */
 
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -111,19 +108,10 @@ export default function GuestClient() {
     );
   }
 
-  /* ---------------- GRID CALCULATION (FIXED) ---------------- */
+  const tables = event.layout.tables ?? [];
 
-  const tables = event.layout.tables;
-
-  const minX = Math.min(...tables.map(t => t.x));
   const maxX = Math.max(...tables.map(t => t.x));
-  const minY = Math.min(...tables.map(t => t.y));
   const maxY = Math.max(...tables.map(t => t.y));
-
-  const xRange = maxX - minX || 1;
-  const yRange = maxY - minY || 1;
-
-  /* ---------------- RENDER ---------------- */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -195,27 +183,35 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // ✅ Centered proportional positioning
-                  const left = ((table.x - minX) / xRange) * 80 + 10;
-                  const top = ((table.y - minY) / yRange) * 80 + 10;
+                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
+                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
 
                   const isRound = table.shape === "round";
-                  const isRect = table.shape === "rect";
                   const isVertical = table.orientation === "vertical";
 
-                  const shapeClasses = isRound
-                    ? "w-14 h-14 rounded-full"
-                    : isRect && isVertical
-                      ? "w-12 h-20 rounded-xl"
-                      : isRect
-                        ? "w-20 h-12 rounded-xl"
-                        : "w-14 h-14 rounded-full";
+                  const RECT_BASE_SIZE = 56;
+                  const tableLength = Math.min(table.length ?? 1, 6);
+
+                  let width = RECT_BASE_SIZE;
+                  let height = RECT_BASE_SIZE;
+                  let borderRadius = 4;
+
+                  if (isRound) {
+                    width = RECT_BASE_SIZE;
+                    height = RECT_BASE_SIZE;
+                    borderRadius = RECT_BASE_SIZE / 2;
+                  } else if (isVertical) {
+                    width = RECT_BASE_SIZE;
+                    height = RECT_BASE_SIZE * tableLength;
+                  } else {
+                    width = RECT_BASE_SIZE * tableLength;
+                    height = RECT_BASE_SIZE;
+                  }
 
                   return (
                     <div
                       key={table.id}
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
-                        ${shapeClasses}
                         ${isActive
                           ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
                           : "bg-neutral-700 text-neutral-300"
@@ -223,6 +219,9 @@ export default function GuestClient() {
                       style={{
                         left: `${left}%`,
                         top: `${top}%`,
+                        width,
+                        height,
+                        borderRadius,
                         transform: "translate(-50%, -50%)"
                       }}
                     >
