@@ -8,7 +8,7 @@ interface Table {
   x: number;
   y: number;
   shape: string;
-  orientation?: "horizontal" | "vertical";
+  orientation?: "horizontal" | "vertical" | string;
 }
 
 interface EventData {
@@ -48,8 +48,6 @@ export default function GuestClient() {
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
 
-  /* ---------------- EVENT FETCH ---------------- */
-
   useEffect(() => {
     if (!eventId) return;
 
@@ -71,8 +69,6 @@ export default function GuestClient() {
 
     fetchEvent();
   }, [eventId]);
-
-  /* ---------------- GUEST LOOKUP ---------------- */
 
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -187,20 +183,21 @@ export default function GuestClient() {
                   const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
                   const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
 
-                  const isRound = table.shape?.toLowerCase() === "round";
-                  const isRect = table.shape?.toLowerCase() === "rect";
-                  const isVertical = table.orientation === "vertical";
+                  const shape = table.shape?.toLowerCase();
+                  const orientation = table.orientation?.toLowerCase();
 
                   let shapeClasses = "";
 
-                  if (isRound) {
+                  if (shape === "round") {
                     shapeClasses = "w-14 h-14 rounded-full";
-                  } else if (isRect) {
+                  } else if (shape === "rect") {
+
+                    const isVertical = orientation === "vertical";
+
                     shapeClasses = isVertical
                       ? "w-12 h-20 rounded-xl"
                       : "w-20 h-12 rounded-xl";
                   } else {
-                    // fallback: treat unknown shapes as round
                     shapeClasses = "w-14 h-14 rounded-full";
                   }
 
