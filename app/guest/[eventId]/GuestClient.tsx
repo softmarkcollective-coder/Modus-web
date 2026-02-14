@@ -56,7 +56,7 @@ export default function GuestClient() {
     async function fetchEvent() {
       try {
         const res = await fetch(`/api/guest/event/${eventId}`, {
-          cache: "no-store", // 🔥 ensures live updates
+          cache: "no-store",
         });
 
         if (res.status === 404) {
@@ -88,13 +88,13 @@ export default function GuestClient() {
         `/api/guest/event/${eventId}/guest?name=${encodeURIComponent(
           guestName.trim()
         )}`,
-        { cache: "no-store" } // 🔥 prevent caching guest lookup
+        { cache: "no-store" }
       );
 
       const data = (await res.json()) as GuestResponse;
       setGuestResult(data);
 
-      // 🔄 Refresh event to ensure updated image/menu/name
+      // Refresh event after lookup to ensure live updates
       const refreshed = await fetch(`/api/guest/event/${eventId}`, {
         cache: "no-store",
       });
@@ -122,19 +122,13 @@ export default function GuestClient() {
     );
   }
 
-  /* ---------------- GRID CALCULATION ---------------- */
-
   const tables = event.layout.tables ?? [];
-
-  const maxX = tables.length ? Math.max(...tables.map(t => t.x)) : 0;
-  const maxY = tables.length ? Math.max(...tables.map(t => t.y)) : 0;
-
-  /* ---------------- RENDER ---------------- */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
+        {/* Hero Image */}
         {event.image && event.image.startsWith("http") && (
           <div className="relative">
             <img
@@ -155,6 +149,7 @@ export default function GuestClient() {
           </h1>
         </div>
 
+        {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
           <input
             type="text"
@@ -181,6 +176,7 @@ export default function GuestClient() {
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
+            {/* Table Highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
@@ -190,52 +186,80 @@ export default function GuestClient() {
               </div>
             </div>
 
+            {/* Seating Plan — Column Based */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
 
-              <div className="relative h-72 bg-black rounded-2xl">
+              <div className="bg-black rounded-2xl p-6">
+                {(() => {
+                  const columns: Record<number, Table[]> = {};
+                  tables.forEach((t) => {
+                    if (!columns[t.x]) columns[t.x] = [];
+                    columns[t.x].push(t);
+                  });
 
-                {tables.map((table) => {
+                  const sortedX = Object.keys(columns)
+                    .map(Number)
+                    .sort((a, b) => a - b);
 
-                  const isActive = table.id === guestResult.guest.table;
-
-                  // 📐 stable proportional positioning
-                  const left = ((table.x + 1) / (maxX + 2)) * 100;
-                  const top = ((table.y + 1) / (maxY + 2)) * 100;
-
-                  const isRound = table.shape === "round";
-                  const isRect = table.shape === "rect";
-                  const isVertical = table.orientation === "vertical";
-
-                  const shapeClasses = isRound
-                    ? "w-14 h-14 rounded-full"
-                    : isRect && isVertical
-                      ? "w-12 h-20 rounded-xl"
-                      : isRect
-                        ? "w-20 h-12 rounded-xl"
-                        : "w-14 h-14 rounded-full";
+                  sortedX.forEach((x) => {
+                    columns[x].sort((a, b) => a.y - b.y);
+                  });
 
                   return (
-                    <div
-                      key={table.id}
-                      className={`absolute flex items-center justify-center text-sm font-semibold transition-all
-                        ${shapeClasses}
-                        ${isActive
-                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
-                          : "bg-neutral-700 text-neutral-300"
-                        }`}
-                      style={{
-                        left: `${left}%`,
-                        top: `${top}%`,
-                        transform: "translate(-50%, -50%)"
-                      }}
-                    >
-                      {table.id}
+                    <div className="flex justify-between items-start gap-8">
+                      {sortedX.map((x) => {
+                        const isCenter = x === 1;
+
+                        return (
+                          <div
+                            key={x}
+                            className={`flex ${
+                              isCenter
+                                ? "flex-row items-center justify-center gap-4"
+                                : "flex-col items-center gap-4"
+                            }`}
+                          >
+                            {columns[x].map((table) => {
+                              const isActive =
+                                guestResult.guest.table === table.id;
+
+                              const isRound = table.shape === "round";
+                              const isRect = table.shape === "rect";
+                              const isVertical =
+                                table.orientation === "vertical";
+
+                              const shapeClasses = isRound
+                                ? "w-14 h-14 rounded-full"
+                                : isRect && isVertical
+                                ? "w-12 h-20 rounded-xl"
+                                : isRect
+                                ? "w-20 h-12 rounded-xl"
+                                : "w-14 h-14 rounded-full";
+
+                              return (
+                                <div
+                                  key={table.id}
+                                  className={`flex items-center justify-center text-sm font-semibold transition-all
+                                    ${shapeClasses}
+                                    ${
+                                      isActive
+                                        ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                                        : "bg-neutral-700 text-neutral-300"
+                                    }`}
+                                >
+                                  {table.id}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
                     </div>
                   );
-                })}
+                })()}
               </div>
             </div>
 
@@ -250,7 +274,6 @@ export default function GuestClient() {
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
                   Menu
                 </h3>
-
                 <ul className="space-y-3 text-neutral-300">
                   {event.menu.map((item, index) => (
                     <li key={index}>{item}</li>
@@ -258,14 +281,12 @@ export default function GuestClient() {
                 </ul>
               </div>
             )}
-
           </div>
         )}
 
         <div className="text-neutral-600 text-sm">
           {tables.length} tables at this event
         </div>
-
       </div>
     </div>
   );
