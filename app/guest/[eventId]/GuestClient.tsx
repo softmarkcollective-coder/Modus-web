@@ -9,9 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  length?: number;
-  zoneId?: "left" | "center" | "right" | null;
-  orderIndex?: number | null;
+  length?: number; // ✅ added
 }
 
 interface EventData {
@@ -51,6 +49,8 @@ export default function GuestClient() {
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
 
+  /* ---------------- EVENT FETCH ---------------- */
+
   useEffect(() => {
     if (!eventId) return;
 
@@ -72,6 +72,8 @@ export default function GuestClient() {
 
     fetchEvent();
   }, [eventId]);
+
+  /* ---------------- GUEST LOOKUP ---------------- */
 
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -110,58 +112,12 @@ export default function GuestClient() {
     );
   }
 
-  const tables = event.layout.tables;
+  /* ---------------- GRID CALCULATION ---------------- */
 
-  const hasZoneLayout = tables.some(t => t.zoneId);
+  const maxX = Math.max(...event.layout.tables.map(t => t.x));
+  const maxY = Math.max(...event.layout.tables.map(t => t.y));
 
-  const maxX = Math.max(...tables.map(t => t.x));
-  const maxY = Math.max(...tables.map(t => t.y));
-
-  const RECT_BASE_SIZE = 56;
-
-  function renderTable(table: Table) {
-    const isActive = 
-    guestResult?.found === true &&
-    guestResult.guest.table === table.id;
-
-    const isRound = table.shape === "round";
-    const isVertical = table.orientation === "vertical";
-    const tableLength = Math.min(table.length ?? 1, 6);
-
-    let width = RECT_BASE_SIZE;
-    let height = RECT_BASE_SIZE;
-    let borderRadius = 4;
-
-    if (isRound) {
-      width = RECT_BASE_SIZE;
-      height = RECT_BASE_SIZE;
-      borderRadius = width / 2;
-    } else if (isVertical) {
-      width = RECT_BASE_SIZE;
-      height = RECT_BASE_SIZE * tableLength;
-    } else {
-      width = RECT_BASE_SIZE * tableLength;
-      height = RECT_BASE_SIZE;
-    }
-
-    return (
-      <div
-        key={table.id}
-        className={`flex items-center justify-center text-sm font-semibold transition-all
-          ${isActive
-            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
-            : "bg-neutral-700 text-neutral-300"
-          }`}
-        style={{
-          width,
-          height,
-          borderRadius
-        }}
-      >
-        {table.id}
-      </div>
-    );
-  }
+  /* ---------------- RENDER ---------------- */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -227,42 +183,55 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              {!hasZoneLayout && (
-                <div className="relative h-72 bg-black rounded-2xl">
-                  {tables.map((table) => {
-                    const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
-                    const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+              <div className="relative h-72 bg-black rounded-2xl">
 
-                    return (
-                      <div
-                        key={table.id}
-                        className="absolute"
-                        style={{
-                          left: `${left}%`,
-                          top: `${top}%`,
-                          transform: "translate(-50%, -50%)"
-                        }}
-                      >
-                        {renderTable(table)}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                {event.layout.tables.map((table) => {
 
-              {hasZoneLayout && (
-                <div className="flex justify-between gap-6 bg-black rounded-2xl p-6">
-                  {["left", "center", "right"].map(zone => (
-                    <div key={zone} className="flex flex-col gap-4 items-center flex-1">
-                      {tables
-                        .filter(t => t.zoneId === zone)
-                        .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
-                        .map(renderTable)}
+                  const isActive = table.id === guestResult.guest.table;
+
+                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
+                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+
+                  const isRound = table.shape === "round";
+                  const isRect = table.shape === "rect";
+                  const isVertical = table.orientation === "vertical";
+                  const length = table.length ?? 1;
+
+                  let width = 56;
+                  let height = 56;
+
+                  if (isRect) {
+                    if (isVertical) {
+                      width = 48;
+                      height = 48 * length;
+                    } else {
+                      width = 80 * length;
+                      height = 48;
+                    }
+                  }
+
+                  return (
+                    <div
+                      key={table.id}
+                      className={`absolute flex items-center justify-center text-sm font-semibold transition-all rounded-xl
+                        ${isActive
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                          : "bg-neutral-700 text-neutral-300"
+                        }`}
+                      style={{
+                        width: isRound ? 56 : width,
+                        height: isRound ? 56 : height,
+                        borderRadius: isRound ? "9999px" : "0.75rem",
+                        left: `${left}%`,
+                        top: `${top}%`,
+                        transform: "translate(-50%, -50%)"
+                      }}
+                    >
+                      {table.id}
                     </div>
-                  ))}
-                </div>
-              )}
-
+                  );
+                })}
+              </div>
             </div>
 
             {event.hostMessage && (
@@ -289,7 +258,7 @@ export default function GuestClient() {
         )}
 
         <div className="text-neutral-600 text-sm">
-          {tables.length} tables at this event
+          {event.layout.tables.length} tables at this event
         </div>
 
       </div>
