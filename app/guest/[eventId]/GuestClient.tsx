@@ -9,6 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: string;
+  size?: 1 | 2 | 3; // ✅ tilføjet strict size
 }
 
 interface EventData {
@@ -185,18 +186,36 @@ export default function GuestClient() {
 
                   const shape = table.shape?.toLowerCase();
                   const orientation = table.orientation?.toLowerCase();
+                  const size = table.size ?? 1;
 
                   let shapeClasses = "";
 
+                  // 🔵 ROUND (fast størrelse)
                   if (shape === "round") {
                     shapeClasses = "w-14 h-14 rounded-full";
                   }
 
-                  if (shape === "rect") {
+                  // 🔵 RECT (orientation + size styrer ALT)
+                  if (shape === "rect" && orientation) {
+
+                    const horizontalSizes = {
+                      1: "w-20 h-12",
+                      2: "w-28 h-12",
+                      3: "w-36 h-12",
+                    };
+
+                    const verticalSizes = {
+                      1: "w-12 h-20",
+                      2: "w-12 h-28",
+                      3: "w-12 h-36",
+                    };
+
                     if (orientation === "horizontal") {
-                      shapeClasses = "w-20 h-12 rounded-xl";
-                    } else if (orientation === "vertical") {
-                      shapeClasses = "w-12 h-20 rounded-xl";
+                      shapeClasses = `${horizontalSizes[size]} rounded-xl`;
+                    }
+
+                    if (orientation === "vertical") {
+                      shapeClasses = `${verticalSizes[size]} rounded-xl`;
                     }
                   }
 
