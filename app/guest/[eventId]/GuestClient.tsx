@@ -9,7 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  length?: number; // 👈 supports 1,2,3 like iOS app
+  length?: number; // 🔥 support 1 / 2 / 3 length
 }
 
 interface EventData {
@@ -94,14 +94,6 @@ export default function GuestClient() {
 
       const data = (await res.json()) as GuestResponse;
       setGuestResult(data);
-
-      // refresh event for live updates
-      const refreshed = await fetch(`/api/guest/event/${eventId}`, {
-        cache: "no-store",
-      });
-      const refreshedData = (await refreshed.json()) as EventData;
-      setEvent(refreshedData);
-
     } finally {
       setGuestLoading(false);
     }
@@ -125,11 +117,14 @@ export default function GuestClient() {
 
   const tables = event.layout.tables ?? [];
 
+  const maxX = tables.length ? Math.max(...tables.map(t => t.x)) : 0;
+  const maxY = tables.length ? Math.max(...tables.map(t => t.y)) : 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
-        {/* Hero Image — ALWAYS render if present */}
+        {/* 🔥 Hero Image (more tolerant URL check) */}
         {event.image && (
           <div className="relative">
             <img
@@ -177,7 +172,7 @@ export default function GuestClient() {
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
-            {/* Highlight */}
+            {/* Table highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
@@ -193,96 +188,67 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              <div className="bg-black rounded-2xl p-8">
-                {(() => {
-                  const columns: Record<number, Table[]> = {};
+              <div className="relative h-72 bg-black rounded-2xl">
 
-                  tables.forEach((t) => {
-                    if (!columns[t.x]) columns[t.x] = [];
-                    columns[t.x].push(t);
-                  });
+                {tables.map((table) => {
 
-                  const sortedX = Object.keys(columns)
-                    .map(Number)
-                    .sort((a, b) => a - b);
+                  const isActive = table.id === guestResult.guest.table;
 
-                  sortedX.forEach((x) => {
-                    columns[x].sort((a, b) => a.y - b.y);
-                  });
+                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
+                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+
+                  const isRound = table.shape === "round";
+                  const isRect = table.shape === "rect";
+
+                  // 🔥 Correct orientation logic:
+                  const derivedOrientation =
+                    table.orientation ??
+                    (table.x === 1 ? "horizontal" : "vertical");
+
+                  const length = table.length ?? 1;
+
+                  const baseWidth =
+                    derivedOrientation === "horizontal" ? 20 : 12;
+
+                  const baseHeight =
+                    derivedOrientation === "vertical" ? 20 : 12;
+
+                  const width =
+                    derivedOrientation === "horizontal"
+                      ? `${baseWidth * length}px`
+                      : `${baseWidth}px`;
+
+                  const height =
+                    derivedOrientation === "vertical"
+                      ? `${baseHeight * length}px`
+                      : `${baseHeight}px`;
+
+                  const shapeClasses = isRound
+                    ? "w-14 h-14 rounded-full"
+                    : "rounded-xl";
 
                   return (
-                    <div className="flex justify-between items-start gap-16">
-
-                      {sortedX.map((x) => {
-                        const isCenter = x === 1;
-
-                        return (
-                          <div
-                            key={x}
-                            className={`flex ${
-                              isCenter
-                                ? "flex-row items-center justify-center gap-6"
-                                : "flex-col items-center gap-6"
-                            }`}
-                          >
-                            {columns[x].map((table) => {
-
-                              const isActive =
-                                guestResult.guest.table === table.id;
-
-                              const length = table.length ?? 1;
-
-                              const baseRound = 56;
-                              const baseRectShort = 48;
-                              const baseRectLong = 80;
-
-                              const sizeMultiplier = length;
-
-                              let width = 56;
-                              let height = 56;
-
-                              if (table.shape === "round") {
-                                width = baseRound;
-                                height = baseRound;
-                              } else if (table.shape === "rect") {
-                                if (table.orientation === "horizontal") {
-                                  width = baseRectLong * sizeMultiplier;
-                                  height = baseRectShort;
-                                } else {
-                                  width = baseRectShort;
-                                  height = baseRectLong * sizeMultiplier;
-                                }
-                              }
-
-                              return (
-                                <div
-                                  key={table.id}
-                                  style={{
-                                    width,
-                                    height,
-                                  }}
-                                  className={`flex items-center justify-center text-sm font-semibold rounded-xl transition-all
-                                    ${
-                                      table.shape === "round"
-                                        ? "rounded-full"
-                                        : ""
-                                    }
-                                    ${
-                                      isActive
-                                        ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_30px_rgba(214,178,94,0.8)] scale-110"
-                                        : "bg-neutral-700 text-neutral-300"
-                                    }`}
-                                >
-                                  {table.id}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })}
+                    <div
+                      key={table.id}
+                      className={`absolute flex items-center justify-center text-sm font-semibold transition-all
+                        ${shapeClasses}
+                        ${
+                          isActive
+                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                            : "bg-neutral-700 text-neutral-300"
+                        }`}
+                      style={{
+                        left: `${left}%`,
+                        top: `${top}%`,
+                        transform: "translate(-50%, -50%)",
+                        width: isRound ? undefined : width,
+                        height: isRound ? undefined : height,
+                      }}
+                    >
+                      {table.id}
                     </div>
                   );
-                })()}
+                })}
               </div>
             </div>
 
@@ -297,6 +263,7 @@ export default function GuestClient() {
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
                   Menu
                 </h3>
+
                 <ul className="space-y-3 text-neutral-300">
                   {event.menu.map((item, index) => (
                     <li key={index}>{item}</li>
@@ -304,12 +271,14 @@ export default function GuestClient() {
                 </ul>
               </div>
             )}
+
           </div>
         )}
 
         <div className="text-neutral-600 text-sm">
           {tables.length} tables at this event
         </div>
+
       </div>
     </div>
   );
