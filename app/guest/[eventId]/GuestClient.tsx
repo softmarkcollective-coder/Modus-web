@@ -9,7 +9,6 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  length?: number; // added for app parity
 }
 
 interface EventData {
@@ -112,10 +111,14 @@ export default function GuestClient() {
     );
   }
 
-  /* ---------------- GRID CALCULATION ---------------- */
+  /* ---------------- FIXED CANVAS PROJECTION ---------------- */
 
-  const maxX = Math.max(...event.layout.tables.map((t) => t.x));
-  const maxY = Math.max(...event.layout.tables.map((t) => t.y));
+  const CANVAS_SIZE = 300; // fixed internal layout size (like iOS miniature)
+  const maxX = Math.max(...event.layout.tables.map(t => t.x));
+  const maxY = Math.max(...event.layout.tables.map(t => t.y));
+
+  const scaleX = maxX === 0 ? 1 : CANVAS_SIZE / maxX;
+  const scaleY = maxY === 0 ? 1 : CANVAS_SIZE / maxY;
 
   /* ---------------- RENDER ---------------- */
 
@@ -123,7 +126,6 @@ export default function GuestClient() {
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
-        {/* Hero Image */}
         {event.image && event.image.startsWith("http") && (
           <div className="relative">
             <img
@@ -144,7 +146,6 @@ export default function GuestClient() {
           </h1>
         </div>
 
-        {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
           <input
             type="text"
@@ -171,7 +172,6 @@ export default function GuestClient() {
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
-            {/* Table highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
@@ -181,57 +181,44 @@ export default function GuestClient() {
               </div>
             </div>
 
-            {/* Seating Plan */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
 
-              <div className="relative h-72 bg-black rounded-2xl">
+              <div className="relative h-72 bg-black rounded-2xl overflow-hidden">
 
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
-                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+                  const left = table.x * scaleX;
+                  const top = table.y * scaleY;
 
                   const isRound = table.shape === "round";
+                  const isRect = table.shape === "rect";
                   const isVertical = table.orientation === "vertical";
 
-                  const tableLength = Math.min(table.length ?? 1, 6);
-                  const RECT_BASE_SIZE = 56;
-
-                  let width = RECT_BASE_SIZE;
-                  let height = RECT_BASE_SIZE;
-                  let borderRadius = 4;
-
-                  if (isRound) {
-                    width = RECT_BASE_SIZE;
-                    height = RECT_BASE_SIZE;
-                    borderRadius = RECT_BASE_SIZE / 2;
-                  } else if (isVertical) {
-                    width = RECT_BASE_SIZE;
-                    height = RECT_BASE_SIZE * tableLength;
-                  } else {
-                    width = RECT_BASE_SIZE * tableLength;
-                    height = RECT_BASE_SIZE;
-                  }
+                  const shapeClasses = isRound
+                    ? "w-14 h-14 rounded-full"
+                    : isRect && isVertical
+                      ? "w-12 h-20 rounded-xl"
+                      : isRect
+                        ? "w-20 h-12 rounded-xl"
+                        : "w-14 h-14 rounded-full";
 
                   return (
                     <div
                       key={table.id}
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
+                        ${shapeClasses}
                         ${isActive
                           ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        left: `${left}%`,
-                        top: `${top}%`,
-                        width: `${width}px`,
-                        height: `${height}px`,
-                        borderRadius: `${borderRadius}px`,
+                        left,
+                        top,
                         transform: "translate(-50%, -50%)"
                       }}
                     >
