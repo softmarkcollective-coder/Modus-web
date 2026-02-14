@@ -9,7 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  length?: number; // 🔥 support 1 / 2 / 3 length
+  length?: number; // 🔥 supports long tables (1,2,3)
 }
 
 interface EventData {
@@ -49,16 +49,12 @@ export default function GuestClient() {
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
 
-  /* ---------------- EVENT FETCH ---------------- */
-
   useEffect(() => {
     if (!eventId) return;
 
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/guest/event/${eventId}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`/api/guest/event/${eventId}`);
 
         if (res.status === 404) {
           setNotFound(true);
@@ -75,8 +71,6 @@ export default function GuestClient() {
     fetchEvent();
   }, [eventId]);
 
-  /* ---------------- GUEST LOOKUP ---------------- */
-
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
     if (!guestName.trim()) return;
@@ -88,8 +82,7 @@ export default function GuestClient() {
       const res = await fetch(
         `/api/guest/event/${eventId}/guest?name=${encodeURIComponent(
           guestName.trim()
-        )}`,
-        { cache: "no-store" }
+        )}`
       );
 
       const data = (await res.json()) as GuestResponse;
@@ -117,15 +110,11 @@ export default function GuestClient() {
 
   const tables = event.layout.tables ?? [];
 
-  const maxX = tables.length ? Math.max(...tables.map(t => t.x)) : 0;
-  const maxY = tables.length ? Math.max(...tables.map(t => t.y)) : 0;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
-        {/* 🔥 Hero Image (more tolerant URL check) */}
-        {event.image && (
+        {event.image && event.image.startsWith("http") && (
           <div className="relative">
             <img
               src={event.image}
@@ -145,7 +134,6 @@ export default function GuestClient() {
           </h1>
         </div>
 
-        {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
           <input
             type="text"
@@ -172,7 +160,6 @@ export default function GuestClient() {
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
-            {/* Table highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
@@ -182,73 +169,92 @@ export default function GuestClient() {
               </div>
             </div>
 
-            {/* Seating Plan */}
+            {/* 🔥 FIXED Seating Plan – column based like iOS */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
 
-              <div className="relative h-72 bg-black rounded-2xl">
+              <div className="bg-black rounded-2xl p-8">
 
-                {tables.map((table) => {
+                {(() => {
+                  const columns: Record<number, Table[]> = {};
 
-                  const isActive = table.id === guestResult.guest.table;
+                  tables.forEach((t) => {
+                    if (!columns[t.x]) columns[t.x] = [];
+                    columns[t.x].push(t);
+                  });
 
-                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
-                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+                  const sortedX = Object.keys(columns)
+                    .map(Number)
+                    .sort((a, b) => a - b);
 
-                  const isRound = table.shape === "round";
-                  const isRect = table.shape === "rect";
-
-                  // 🔥 Correct orientation logic:
-                  const derivedOrientation =
-                    table.orientation ??
-                    (table.x === 1 ? "horizontal" : "vertical");
-
-                  const length = table.length ?? 1;
-
-                  const baseWidth =
-                    derivedOrientation === "horizontal" ? 20 : 12;
-
-                  const baseHeight =
-                    derivedOrientation === "vertical" ? 20 : 12;
-
-                  const width =
-                    derivedOrientation === "horizontal"
-                      ? `${baseWidth * length}px`
-                      : `${baseWidth}px`;
-
-                  const height =
-                    derivedOrientation === "vertical"
-                      ? `${baseHeight * length}px`
-                      : `${baseHeight}px`;
-
-                  const shapeClasses = isRound
-                    ? "w-14 h-14 rounded-full"
-                    : "rounded-xl";
+                  sortedX.forEach((x) => {
+                    columns[x].sort((a, b) => a.y - b.y);
+                  });
 
                   return (
-                    <div
-                      key={table.id}
-                      className={`absolute flex items-center justify-center text-sm font-semibold transition-all
-                        ${shapeClasses}
-                        ${
-                          isActive
-                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
-                            : "bg-neutral-700 text-neutral-300"
-                        }`}
-                      style={{
-                        left: `${left}%`,
-                        top: `${top}%`,
-                        transform: "translate(-50%, -50%)",
-                        width: isRound ? undefined : width,
-                        height: isRound ? undefined : height,
-                      }}
-                    >
-                      {table.id}
+                    <div className="flex justify-between items-start">
+
+                      {sortedX.map((x) => {
+                        const isCenter = x === 1;
+
+                        return (
+                          <div
+                            key={x}
+                            className={`flex ${
+                              isCenter
+                                ? "flex-row justify-center items-center gap-6"
+                                : "flex-col items-center gap-6"
+                            }`}
+                          >
+                            {columns[x].map((table) => {
+                              const isActive =
+                                guestResult.guest.table === table.id;
+
+                              const isRound = table.shape === "round";
+
+                              // 🔥 Length scaling for rect tables
+                              const length = table.length ?? 1;
+                              const baseWidth = 80;
+                              const width = baseWidth * length;
+
+                              const rectClasses = isCenter
+                                ? `h-12 rounded-xl`
+                                : `w-12 h-20 rounded-xl`;
+
+                              return (
+                                <div
+                                  key={table.id}
+                                  className={`flex items-center justify-center text-sm font-semibold transition-all
+                                    ${
+                                      isRound
+                                        ? "w-14 h-14 rounded-full"
+                                        : rectClasses
+                                    }
+                                    ${
+                                      isActive
+                                        ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                                        : "bg-neutral-700 text-neutral-300"
+                                    }`}
+                                  style={
+                                    !isRound && isCenter
+                                      ? { width: `${width}px` }
+                                      : undefined
+                                  }
+                                >
+                                  {table.id}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+
                     </div>
                   );
-                })}
+                })()}
+
               </div>
             </div>
 
