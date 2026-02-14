@@ -8,7 +8,7 @@ interface Table {
   x: number;
   y: number;
   shape: string;
-  orientation?: "horizontal" | "vertical" | string;
+  orientation?: "horizontal" | "vertical";
 }
 
 interface EventData {
@@ -184,19 +184,17 @@ export default function GuestClient() {
                   const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
 
                   const shape = table.shape?.toLowerCase();
-                  const orientation = table.orientation?.toLowerCase();
+                  const orientation = table.orientation ?? "horizontal"; // only fallback if missing
 
                   let shapeClasses = "";
 
                   if (shape === "round") {
                     shapeClasses = "w-14 h-14 rounded-full";
                   } else if (shape === "rect") {
-
-                    const isVertical = orientation === "vertical";
-
-                    shapeClasses = isVertical
-                      ? "w-12 h-20 rounded-xl"
-                      : "w-20 h-12 rounded-xl";
+                    shapeClasses =
+                      orientation === "vertical"
+                        ? "w-12 h-20 rounded-xl"
+                        : "w-20 h-12 rounded-xl";
                   } else {
                     shapeClasses = "w-14 h-14 rounded-full";
                   }
