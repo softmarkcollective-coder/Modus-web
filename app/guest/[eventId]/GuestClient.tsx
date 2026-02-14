@@ -9,7 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  length?: number; // ✅ added
+  length?: number; // ✅ NEW (from Vibecode)
 }
 
 interface EventData {
@@ -195,18 +195,24 @@ export default function GuestClient() {
                   const isRound = table.shape === "round";
                   const isRect = table.shape === "rect";
                   const isVertical = table.orientation === "vertical";
-                  const length = table.length ?? 1;
+                  const length = table.length ?? 1; // ✅ use real length
 
-                  let width = 56;
-                  let height = 56;
+                  let style: React.CSSProperties = {};
 
-                  if (isRect) {
+                  if (isRound) {
+                    style = { width: 56, height: 56 };
+                  } else if (isRect) {
+                    const base = 48;
                     if (isVertical) {
-                      width = 48;
-                      height = 48 * length;
+                      style = {
+                        width: base,
+                        height: base * length
+                      };
                     } else {
-                      width = 80 * length;
-                      height = 48;
+                      style = {
+                        width: base * length,
+                        height: base
+                      };
                     }
                   }
 
@@ -219,9 +225,7 @@ export default function GuestClient() {
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        width: isRound ? 56 : width,
-                        height: isRound ? 56 : height,
-                        borderRadius: isRound ? "9999px" : "0.75rem",
+                        ...style,
                         left: `${left}%`,
                         top: `${top}%`,
                         transform: "translate(-50%, -50%)"
