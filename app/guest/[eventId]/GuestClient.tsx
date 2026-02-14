@@ -55,7 +55,9 @@ export default function GuestClient() {
 
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/guest/event/${eventId}`);
+        const res = await fetch(`/api/guest/event/${eventId}`, {
+          cache: "no-store", // 🔥 ensures live updates
+        });
 
         if (res.status === 404) {
           setNotFound(true);
@@ -85,11 +87,20 @@ export default function GuestClient() {
       const res = await fetch(
         `/api/guest/event/${eventId}/guest?name=${encodeURIComponent(
           guestName.trim()
-        )}`
+        )}`,
+        { cache: "no-store" } // 🔥 prevent caching guest lookup
       );
 
       const data = (await res.json()) as GuestResponse;
       setGuestResult(data);
+
+      // 🔄 Refresh event to ensure updated image/menu/name
+      const refreshed = await fetch(`/api/guest/event/${eventId}`, {
+        cache: "no-store",
+      });
+      const refreshedData = (await refreshed.json()) as EventData;
+      setEvent(refreshedData);
+
     } finally {
       setGuestLoading(false);
     }
@@ -113,8 +124,10 @@ export default function GuestClient() {
 
   /* ---------------- GRID CALCULATION ---------------- */
 
-  const maxX = Math.max(...event.layout.tables.map(t => t.x));
-  const maxY = Math.max(...event.layout.tables.map(t => t.y));
+  const tables = event.layout.tables ?? [];
+
+  const maxX = tables.length ? Math.max(...tables.map(t => t.x)) : 0;
+  const maxY = tables.length ? Math.max(...tables.map(t => t.y)) : 0;
 
   /* ---------------- RENDER ---------------- */
 
@@ -122,7 +135,6 @@ export default function GuestClient() {
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
-        {/* Hero Image (only valid public URLs) */}
         {event.image && event.image.startsWith("http") && (
           <div className="relative">
             <img
@@ -143,7 +155,6 @@ export default function GuestClient() {
           </h1>
         </div>
 
-        {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
           <input
             type="text"
@@ -170,7 +181,6 @@ export default function GuestClient() {
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
-            {/* Table highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
@@ -180,7 +190,6 @@ export default function GuestClient() {
               </div>
             </div>
 
-            {/* Seating Plan */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
@@ -188,12 +197,13 @@ export default function GuestClient() {
 
               <div className="relative h-72 bg-black rounded-2xl">
 
-                {event.layout.tables.map((table) => {
+                {tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  const left = maxX === 0 ? 50 : (table.x / maxX) * 100;
-                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+                  // 📐 stable proportional positioning
+                  const left = ((table.x + 1) / (maxX + 2)) * 100;
+                  const top = ((table.y + 1) / (maxY + 2)) * 100;
 
                   const isRound = table.shape === "round";
                   const isRect = table.shape === "rect";
@@ -229,14 +239,12 @@ export default function GuestClient() {
               </div>
             </div>
 
-            {/* Host Message */}
             {event.hostMessage && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
                 {event.hostMessage}
               </div>
             )}
 
-            {/* Menu */}
             {event.menu && event.menu.length > 0 && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
@@ -255,7 +263,7 @@ export default function GuestClient() {
         )}
 
         <div className="text-neutral-600 text-sm">
-          {event.layout.tables.length} tables at this event
+          {tables.length} tables at this event
         </div>
 
       </div>
