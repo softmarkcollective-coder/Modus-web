@@ -9,7 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  length?: number; // ✅ added for parity with iOS
+  length?: number; // added for app parity
 }
 
 interface EventData {
@@ -49,6 +49,8 @@ export default function GuestClient() {
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
 
+  /* ---------------- EVENT FETCH ---------------- */
+
   useEffect(() => {
     if (!eventId) return;
 
@@ -70,6 +72,8 @@ export default function GuestClient() {
 
     fetchEvent();
   }, [eventId]);
+
+  /* ---------------- GUEST LOOKUP ---------------- */
 
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -108,15 +112,18 @@ export default function GuestClient() {
     );
   }
 
-  const tables = event.layout.tables ?? [];
+  /* ---------------- GRID CALCULATION ---------------- */
 
-  const maxX = Math.max(...tables.map(t => t.x));
-  const maxY = Math.max(...tables.map(t => t.y));
+  const maxX = Math.max(...event.layout.tables.map((t) => t.x));
+  const maxY = Math.max(...event.layout.tables.map((t) => t.y));
+
+  /* ---------------- RENDER ---------------- */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
+        {/* Hero Image */}
         {event.image && event.image.startsWith("http") && (
           <div className="relative">
             <img
@@ -137,6 +144,7 @@ export default function GuestClient() {
           </h1>
         </div>
 
+        {/* Search */}
         <form onSubmit={handleGuestLookup} className="space-y-5">
           <input
             type="text"
@@ -163,6 +171,7 @@ export default function GuestClient() {
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
+            {/* Table highlight */}
             <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
               <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
                 You are seated at
@@ -172,14 +181,15 @@ export default function GuestClient() {
               </div>
             </div>
 
+            {/* Seating Plan */}
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
                 Seating Plan
               </p>
 
-              <div className="relative h-72 bg-black rounded-2xl overflow-hidden">
+              <div className="relative h-72 bg-black rounded-2xl">
 
-                {tables.map((table) => {
+                {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
@@ -189,8 +199,8 @@ export default function GuestClient() {
                   const isRound = table.shape === "round";
                   const isVertical = table.orientation === "vertical";
 
-                  const RECT_BASE_SIZE = 56;
                   const tableLength = Math.min(table.length ?? 1, 6);
+                  const RECT_BASE_SIZE = 56;
 
                   let width = RECT_BASE_SIZE;
                   let height = RECT_BASE_SIZE;
@@ -219,9 +229,9 @@ export default function GuestClient() {
                       style={{
                         left: `${left}%`,
                         top: `${top}%`,
-                        width,
-                        height,
-                        borderRadius,
+                        width: `${width}px`,
+                        height: `${height}px`,
+                        borderRadius: `${borderRadius}px`,
                         transform: "translate(-50%, -50%)"
                       }}
                     >
@@ -256,7 +266,7 @@ export default function GuestClient() {
         )}
 
         <div className="text-neutral-600 text-sm">
-          {tables.length} tables at this event
+          {event.layout.tables.length} tables at this event
         </div>
 
       </div>
