@@ -9,6 +9,10 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
+  render?: {                       // ✅ TILFØJET
+    leftPercent: number;
+    topPercent: number;
+  };
 }
 
 interface EventData {
@@ -107,9 +111,6 @@ export default function GuestClient() {
     );
   }
 
-  const maxX = Math.max(...event.layout.tables.map(t => t.x));
-  const maxY = Math.max(...event.layout.tables.map(t => t.y));
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -180,17 +181,9 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // ✅ JUSTERET LEFT-BEREGNING (sektionel alignment)
-                  const left =
-                    maxX === 0
-                      ? 50
-                      : table.x === 0
-                        ? 5
-                        : table.x === maxX
-                          ? 95
-                          : 50;
-
-                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
+                  // ✅ NU BRUGER VI KUN VIBECODE RENDER DATA
+                  const left = table.render?.leftPercent ?? 50;
+                  const top = table.render?.topPercent ?? 50;
 
                   const shape = table.shape;
                   const orientation = table.orientation?.toLowerCase();
