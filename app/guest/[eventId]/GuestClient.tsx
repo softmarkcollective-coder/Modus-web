@@ -17,7 +17,7 @@ interface EventData {
   image: string | null;
   hostMessage?: string | null;
   menu?: string[] | null;
-  menuTitle?: string | null; // 🔥 NEW (dynamic title from app)
+  menuTitle?: string | null; // 🔥 dynamisk titel (Menu / Agenda)
   layout: {
     tables: Table[];
   };
@@ -108,7 +108,7 @@ export default function GuestClient() {
     );
   }
 
-  /* Dynamisk grid */
+  /* Dynamisk grid – matcher Vibecode */
   const maxX = Math.max(...event.layout.tables.map(t => t.x));
   const maxY = Math.max(...event.layout.tables.map(t => t.y));
 
@@ -185,12 +185,12 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  /* 🔥 KORREKT & DYNAMISK – forankret i grid */
+                  /* 🔥 RETTET: ingen +0.5 – brug præcis Vibecode grid */
                   const leftPercent =
-                    (table.x / (GRID_COLUMNS - 1 || 1)) * 100;
+                    table.x * (100 / (GRID_COLUMNS - 1));
 
                   const topPercent =
-                    (table.y / (GRID_ROWS - 1 || 1)) * 100;
+                    table.y * (100 / (GRID_ROWS - 1));
 
                   const shapeClasses =
                     table.shape === "round"
@@ -230,7 +230,7 @@ export default function GuestClient() {
             {event.menu && event.menu.length > 0 && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                  {event.menuTitle || "Menu"}
+                  {event.menuTitle ?? "Menu"}
                 </h3>
                 <ul className="space-y-3 text-neutral-300">
                   {event.menu.map((item, index) => (
