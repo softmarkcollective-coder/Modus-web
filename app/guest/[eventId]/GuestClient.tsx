@@ -9,7 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  size?: number; // 🔥 added support for dynamic size
+  size?: number; // 🔥 support size 1-2-3
   render: {
     leftPercent: number;
     topPercent: number;
@@ -59,7 +59,9 @@ export default function GuestClient() {
 
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/guest/event/${eventId}`);
+        const res = await fetch(`/api/guest/event/${eventId}`, {
+          cache: "no-store" // 🔥 ensures live updates
+        });
 
         if (res.status === 404) {
           setNotFound(true);
@@ -87,7 +89,8 @@ export default function GuestClient() {
       const res = await fetch(
         `/api/guest/event/${eventId}/guest?name=${encodeURIComponent(
           guestName.trim()
-        )}`
+        )}`,
+        { cache: "no-store" } // 🔥 live lookup
       );
 
       const data = (await res.json()) as GuestResponse;
@@ -183,10 +186,10 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // 🔥 Dynamic size support (fallback = 56px)
-                  const baseSize = 56;
-                  const multiplier = table.size ?? 1;
-                  const size = baseSize * multiplier;
+                  // 🔥 dynamic size (1-2-3 clearly visible)
+                  const base = 48;
+                  const sizeMultiplier = table.size ?? 1;
+                  const size = base * sizeMultiplier;
 
                   const styleSize =
                     table.shape === "round"
@@ -195,23 +198,22 @@ export default function GuestClient() {
                         ? { width: size * 0.6, height: size }
                         : { width: size, height: size * 0.6 };
 
-                  const shapeClasses =
-                    table.shape === "round"
-                      ? "rounded-full"
-                      : "rounded-xl";
+                  // 🔥 small visual spacing boost for round tables
+                  const spacingAdjust =
+                    table.shape === "round" ? 1.5 : 0;
 
                   return (
                     <div
                       key={table.id}
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
-                        ${shapeClasses}
+                        ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                         ${isActive
                           ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
                         left: `${table.render.leftPercent}%`,
-                        top: `${table.render.topPercent}%`,
+                        top: `${table.render.topPercent + spacingAdjust}%`,
                         transform: "translate(-50%, -50%)",
                         ...styleSize
                       }}
