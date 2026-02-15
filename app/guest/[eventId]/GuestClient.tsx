@@ -9,10 +9,6 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  render?: {
-    leftPercent: number;
-    topPercent: number;
-  };
 }
 
 interface EventData {
@@ -111,6 +107,16 @@ export default function GuestClient() {
     );
   }
 
+  /* Stable grid spacing */
+  const CELL_WIDTH = 110;
+  const CELL_HEIGHT = 90;
+
+  const maxX = Math.max(...event.layout.tables.map(t => t.x));
+  const maxY = Math.max(...event.layout.tables.map(t => t.y));
+
+  const gridWidth = (maxX + 1) * CELL_WIDTH;
+  const gridHeight = (maxY + 1) * CELL_HEIGHT;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -175,47 +181,53 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              <div className="relative h-72 bg-black rounded-2xl">
+              {/* Centered grid container */}
+              <div className="relative h-80 bg-black rounded-2xl flex items-center justify-center">
+                <div
+                  className="relative"
+                  style={{
+                    width: `${gridWidth}px`,
+                    height: `${gridHeight}px`
+                  }}
+                >
+                  {event.layout.tables.map((table) => {
 
-                {event.layout.tables.map((table) => {
+                    const isActive = table.id === guestResult.guest.table;
 
-                  const isActive = table.id === guestResult.guest.table;
+                    const left = table.x * CELL_WIDTH;
+                    const top = table.y * CELL_HEIGHT;
 
-                  // ✅ Brug backend render-koordinater (single source of truth)
-                  const left = table.render?.leftPercent ?? 50;
-                  const top = table.render?.topPercent ?? 50;
+                    const shape = table.shape;
+                    const orientation = table.orientation;
 
-                  const shape = table.shape;
-                  const orientation = table.orientation?.toLowerCase();
+                    const shapeClasses =
+                      shape === "round"
+                        ? "w-14 h-14 rounded-full"
+                        : shape === "rect" && orientation === "vertical"
+                          ? "w-12 h-20 rounded-xl"
+                          : shape === "rect" && orientation === "horizontal"
+                            ? "w-20 h-12 rounded-xl"
+                            : "w-14 h-14 rounded-full";
 
-                  const shapeClasses =
-                    shape === "round"
-                      ? "w-14 h-14 rounded-full"
-                      : shape === "rect" && orientation === "vertical"
-                        ? "w-12 h-20 rounded-xl"
-                        : shape === "rect" && orientation === "horizontal"
-                          ? "w-20 h-12 rounded-xl"
-                          : "w-14 h-14 rounded-full";
-
-                  return (
-                    <div
-                      key={table.id}
-                      className={`absolute flex items-center justify-center text-sm font-semibold transition-all
-                        ${shapeClasses}
-                        ${isActive
-                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
-                          : "bg-neutral-700 text-neutral-300"
-                        }`}
-                      style={{
-                        left: `${left}%`,
-                        top: `${top}%`,
-                        transform: "translate(-50%, -50%)"
-                      }}
-                    >
-                      {table.id}
-                    </div>
-                  );
-                })}
+                    return (
+                      <div
+                        key={table.id}
+                        className={`absolute flex items-center justify-center text-sm font-semibold transition-all
+                          ${shapeClasses}
+                          ${isActive
+                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                            : "bg-neutral-700 text-neutral-300"
+                          }`}
+                        style={{
+                          left: `${left}px`,
+                          top: `${top}px`
+                        }}
+                      >
+                        {table.id}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
