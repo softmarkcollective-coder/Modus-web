@@ -185,7 +185,6 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              {/* 🔥 Only change: dynamic aspect ratio instead of aspect-square */}
               <div
                 className="relative w-full bg-black rounded-2xl overflow-hidden"
                 style={{ aspectRatio }}
@@ -195,16 +194,30 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  const base = 42;
-                  const multiplier = table.size ?? 1;
-                  const size = base + multiplier * 24;
+                  const base = 56; // fixed thickness reference
+                  const length = base * (table.size ?? 1);
+                  const thickness = base; // width NEVER changes
 
-                  const styleSize =
-                    table.shape === "round"
-                      ? { width: size, height: size }
-                      : table.orientation === "vertical"
-                        ? { width: size * 0.55, height: size }
-                        : { width: size, height: size * 0.55 };
+                  let styleSize;
+
+                  if (table.shape === "round") {
+                    // 🔥 Same diameter — but more air via visual padding buffer
+                    styleSize = {
+                      width: thickness,
+                      height: thickness,
+                      padding: "6px"   // adds spacing around circle
+                    };
+                  } else if (table.orientation === "vertical") {
+                    styleSize = {
+                      width: thickness,
+                      height: length
+                    };
+                  } else {
+                    styleSize = {
+                      width: length,
+                      height: thickness
+                    };
+                  }
 
                   return (
                     <div
