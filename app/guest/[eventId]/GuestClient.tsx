@@ -13,8 +13,6 @@ interface Table {
   render: {
     leftPercent: number;
     topPercent: number;
-    widthPercent: number;
-    heightPercent: number;
   };
 }
 
@@ -27,6 +25,9 @@ interface EventData {
   menuTitle?: string | null;
   layout: {
     tables: Table[];
+    metadata?: {
+      aspectRatio?: number;
+    };
   };
 }
 
@@ -118,6 +119,8 @@ export default function GuestClient() {
     );
   }
 
+  const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -182,11 +185,26 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              <div className="relative w-full aspect-square bg-black rounded-2xl overflow-hidden">
+              {/* 🔥 Only change: dynamic aspect ratio instead of aspect-square */}
+              <div
+                className="relative w-full bg-black rounded-2xl overflow-hidden"
+                style={{ aspectRatio }}
+              >
 
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
+
+                  const base = 42;
+                  const multiplier = table.size ?? 1;
+                  const size = base + multiplier * 24;
+
+                  const styleSize =
+                    table.shape === "round"
+                      ? { width: size, height: size }
+                      : table.orientation === "vertical"
+                        ? { width: size * 0.55, height: size }
+                        : { width: size, height: size * 0.55 };
 
                   return (
                     <div
@@ -194,15 +212,14 @@ export default function GuestClient() {
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
                         ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                         ${isActive
-                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
                         left: `${table.render.leftPercent}%`,
                         top: `${table.render.topPercent}%`,
-                        width: `${table.render.widthPercent}%`,
-                        height: `${table.render.heightPercent}%`,
-                        transform: "translate(-50%, -50%)"
+                        transform: "translate(-50%, -50%)",
+                        ...styleSize
                       }}
                     >
                       {table.id}
