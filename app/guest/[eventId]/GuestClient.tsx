@@ -174,30 +174,43 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              <div className="relative w-full aspect-square bg-black rounded-2xl">
+              {/* 👇 Matcher appens proportioner bedre */}
+              <div className="relative w-full aspect-[4/3] bg-black rounded-2xl overflow-hidden">
 
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // ✅ FIX: Proportional sizing (matches percent-based positioning)
-                  const shapeClasses =
+                  // 🔥 Brug size fra backend
+                  const baseUnit = 28; // px multiplier
+                  const size = table.size ?? 2;
+
+                  const width =
                     table.shape === "round"
-                      ? "w-[12%] aspect-square rounded-full"
+                      ? baseUnit * size
                       : table.orientation === "vertical"
-                        ? "w-[10%] h-[22%] rounded-xl"
-                        : "w-[22%] h-[10%] rounded-xl";
+                        ? baseUnit
+                        : baseUnit * size;
+
+                  const height =
+                    table.shape === "round"
+                      ? baseUnit * size
+                      : table.orientation === "vertical"
+                        ? baseUnit * size
+                        : baseUnit;
 
                   return (
                     <div
                       key={table.id}
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
-                        ${shapeClasses}
+                        ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                         ${isActive
-                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110 z-10"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
+                        width,
+                        height,
                         left: `${table.render?.leftPercent ?? 50}%`,
                         top: `${table.render?.topPercent ?? 50}%`,
                         transform: "translate(-50%, -50%)"
