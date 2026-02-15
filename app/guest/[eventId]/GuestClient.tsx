@@ -186,20 +186,18 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // 🔥 clear size difference
-                  const base = 42;
+                  // 🔥 Size now relative to container (percent based)
+                  const basePercent = 8; // base footprint
                   const multiplier = table.size ?? 1;
-                  const size = base + multiplier * 24; 
-                  // size 1 = 66px
-                  // size 2 = 90px
-                  // size 3 = 114px
+
+                  const mainSize = basePercent * multiplier;
 
                   const styleSize =
                     table.shape === "round"
-                      ? { width: size, height: size }
+                      ? { width: `${mainSize}%`, height: `${mainSize}%` }
                       : table.orientation === "vertical"
-                        ? { width: size * 0.55, height: size }
-                        : { width: size, height: size * 0.55 };
+                        ? { width: `${mainSize * 0.6}%`, height: `${mainSize}%` }
+                        : { width: `${mainSize}%`, height: `${mainSize * 0.6}%` };
 
                   return (
                     <div
@@ -207,7 +205,7 @@ export default function GuestClient() {
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
                         ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                         ${isActive
-                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
