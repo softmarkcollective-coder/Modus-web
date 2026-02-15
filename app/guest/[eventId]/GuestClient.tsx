@@ -9,7 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  render?: {                       // ✅ TILFØJET
+  render?: {
     leftPercent: number;
     topPercent: number;
   };
@@ -181,7 +181,7 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // ✅ NU BRUGER VI KUN VIBECODE RENDER DATA
+                  // ✅ Brug backend render-koordinater (single source of truth)
                   const left = table.render?.leftPercent ?? 50;
                   const top = table.render?.topPercent ?? 50;
 
