@@ -13,6 +13,8 @@ interface Table {
   render: {
     leftPercent: number;
     topPercent: number;
+    widthPercent: number;     // ✅ added
+    heightPercent: number;    // ✅ added
   };
 }
 
@@ -186,19 +188,6 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // 🔥 Size now relative to container (percent based)
-                  const basePercent = 8; // base footprint
-                  const multiplier = table.size ?? 1;
-
-                  const mainSize = basePercent * multiplier;
-
-                  const styleSize =
-                    table.shape === "round"
-                      ? { width: `${mainSize}%`, height: `${mainSize}%` }
-                      : table.orientation === "vertical"
-                        ? { width: `${mainSize * 0.6}%`, height: `${mainSize}%` }
-                        : { width: `${mainSize}%`, height: `${mainSize * 0.6}%` };
-
                   return (
                     <div
                       key={table.id}
@@ -209,10 +198,12 @@ export default function GuestClient() {
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
+                        position: "absolute",
                         left: `${table.render.leftPercent}%`,
                         top: `${table.render.topPercent}%`,
-                        transform: "translate(-50%, -50%)",
-                        ...styleSize
+                        width: `${table.render.widthPercent}%`,
+                        height: `${table.render.heightPercent}%`,
+                        transform: "translate(-50%, -50%)"
                       }}
                     >
                       {table.id}
