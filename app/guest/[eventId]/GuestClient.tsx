@@ -9,6 +9,10 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
+  render: {
+    leftPercent: number;
+    topPercent: number;
+  };
 }
 
 interface EventData {
@@ -108,13 +112,6 @@ export default function GuestClient() {
     );
   }
 
-  /* Dynamisk grid – matcher Vibecode */
-  const maxX = Math.max(...event.layout.tables.map(t => t.x));
-  const maxY = Math.max(...event.layout.tables.map(t => t.y));
-
-  const GRID_COLUMNS = maxX + 1;
-  const GRID_ROWS = maxY + 1;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -185,13 +182,6 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  /* 🔥 RETTET: ingen +0.5 – brug præcis Vibecode grid */
-                  const leftPercent =
-                    table.x * (100 / (GRID_COLUMNS - 1));
-
-                  const topPercent =
-                    table.y * (100 / (GRID_ROWS - 1));
-
                   const shapeClasses =
                     table.shape === "round"
                       ? "w-14 h-14 rounded-full"
@@ -209,8 +199,8 @@ export default function GuestClient() {
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        left: `${leftPercent}%`,
-                        top: `${topPercent}%`,
+                        left: `${table.render.leftPercent}%`,
+                        top: `${table.render.topPercent}%`,
                         transform: "translate(-50%, -50%)"
                       }}
                     >
