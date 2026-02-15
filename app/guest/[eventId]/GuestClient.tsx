@@ -5,14 +5,16 @@ import { useParams } from "next/navigation";
 
 interface Table {
   id: number;
+  x: number;
+  y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
   size?: number;
-  render?: {
+  render: {
     leftPercent: number;
     topPercent: number;
-    widthPercent: number;   // ✅ use backend dimension
-    heightPercent: number;  // ✅ use backend dimension
+    widthPercent: number;
+    heightPercent: number;
   };
 }
 
@@ -22,6 +24,7 @@ interface EventData {
   image: string | null;
   hostMessage?: string | null;
   menu?: string[] | null;
+  menuTitle?: string | null;
   layout: {
     tables: Table[];
   };
@@ -58,7 +61,9 @@ export default function GuestClient() {
 
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/guest/event/${eventId}`);
+        const res = await fetch(`/api/guest/event/${eventId}`, {
+          cache: "no-store"
+        });
 
         if (res.status === 404) {
           setNotFound(true);
@@ -86,7 +91,8 @@ export default function GuestClient() {
       const res = await fetch(
         `/api/guest/event/${eventId}/guest?name=${encodeURIComponent(
           guestName.trim()
-        )}`
+        )}`,
+        { cache: "no-store" }
       );
 
       const data = (await res.json()) as GuestResponse;
@@ -176,7 +182,7 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              <div className="relative w-full aspect-square bg-black rounded-2xl">
+              <div className="relative w-full aspect-square bg-black rounded-2xl overflow-hidden">
 
                 {event.layout.tables.map((table) => {
 
@@ -186,17 +192,17 @@ export default function GuestClient() {
                     <div
                       key={table.id}
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
+                        ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                         ${isActive
-                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        left: `${table.render?.leftPercent ?? 50}%`,
-                        top: `${table.render?.topPercent ?? 50}%`,
-                        width: `${table.render?.widthPercent ?? 8}%`,
-                        height: `${table.render?.heightPercent ?? 8}%`,
-                        transform: "translate(-50%, -50%)",
-                        borderRadius: table.shape === "round" ? "50%" : "12px"
+                        left: `${table.render.leftPercent}%`,
+                        top: `${table.render.topPercent}%`,
+                        width: `${table.render.widthPercent}%`,
+                        height: `${table.render.heightPercent}%`,
+                        transform: "translate(-50%, -50%)"
                       }}
                     >
                       {table.id}
@@ -205,6 +211,26 @@ export default function GuestClient() {
                 })}
               </div>
             </div>
+
+            {event.hostMessage && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+                {event.hostMessage}
+              </div>
+            )}
+
+            {event.menu && event.menu.length > 0 && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                  {event.menuTitle ?? "Menu"}
+                </h3>
+                <ul className="space-y-3 text-neutral-300">
+                  {event.menu.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
           </div>
         )}
 
