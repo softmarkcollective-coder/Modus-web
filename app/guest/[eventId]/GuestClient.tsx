@@ -5,8 +5,6 @@ import { useParams } from "next/navigation";
 
 interface Table {
   id: number;
-  x: number;
-  y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
   size?: number;
@@ -176,28 +174,19 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              {/* 🔥 IMPORTANT: overflow hidden keeps everything inside block */}
-              <div className="relative h-72 bg-black rounded-2xl overflow-hidden">
+              {/* 👇 Container fylder korrekt og er proportional */}
+              <div className="relative w-full aspect-square bg-black rounded-2xl">
 
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // 🔥 USE BACKEND RENDER COORDINATES ONLY
-                  const left = table.render?.leftPercent ?? 50;
-                  const top = table.render?.topPercent ?? 50;
-
-                  const shape = table.shape;
-                  const orientation = table.orientation;
-
                   const shapeClasses =
-                    shape === "round"
+                    table.shape === "round"
                       ? "w-14 h-14 rounded-full"
-                      : shape === "rect" && orientation === "vertical"
+                      : table.orientation === "vertical"
                         ? "w-12 h-20 rounded-xl"
-                        : shape === "rect" && orientation === "horizontal"
-                          ? "w-20 h-12 rounded-xl"
-                          : "w-14 h-14 rounded-full";
+                        : "w-20 h-12 rounded-xl";
 
                   return (
                     <div
@@ -209,8 +198,8 @@ export default function GuestClient() {
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        left: `${left}%`,
-                        top: `${top}%`,
+                        left: `${table.render?.leftPercent ?? 50}%`,
+                        top: `${table.render?.topPercent ?? 50}%`,
                         transform: "translate(-50%, -50%)"
                       }}
                     >
@@ -220,27 +209,6 @@ export default function GuestClient() {
                 })}
               </div>
             </div>
-
-            {event.hostMessage && (
-              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
-                {event.hostMessage}
-              </div>
-            )}
-
-            {event.menu && event.menu.length > 0 && (
-              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
-                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                  Menu
-                </h3>
-
-                <ul className="space-y-3 text-neutral-300">
-                  {event.menu.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
           </div>
         )}
 
