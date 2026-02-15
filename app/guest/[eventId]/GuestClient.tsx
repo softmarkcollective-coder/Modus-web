@@ -221,7 +221,7 @@ export default function GuestClient() {
                         top: `${table.render.topPercent}%`,
                         transform:
                           table.shape === "round"
-                            ? "translate(-50%, -45%)" // 🔥 tiny vertical lift = more air
+                            ? "translate(-50%, -52%)" // 🔥 tiny downward shift = more air without changing size
                             : "translate(-50%, -50%)",
                         ...styleSize
                       }}
