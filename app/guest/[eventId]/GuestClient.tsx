@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 
 interface Table {
@@ -107,7 +107,7 @@ export default function GuestClient() {
     );
   }
 
-  /* 🔥 DYNAMISK GRID (matcher Vibecode layout logik) */
+  /* Dynamisk grid */
   const maxX = Math.max(...event.layout.tables.map(t => t.x));
   const maxY = Math.max(...event.layout.tables.map(t => t.y));
 
@@ -178,18 +178,18 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              {/* 🔥 Container er nu proportional og fylder korrekt */}
-              <div className="relative w-full aspect-square bg-black rounded-2xl">
+              <div className="relative w-full aspect-square bg-black rounded-2xl overflow-hidden">
 
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
+                  /* 🔥 KORREKT POSITION – ingen centrering */
                   const leftPercent =
-                    (table.x + 0.5) * (100 / GRID_COLUMNS);
+                    table.x * (100 / GRID_COLUMNS);
 
                   const topPercent =
-                    (table.y + 0.5) * (100 / GRID_ROWS);
+                    table.y * (100 / GRID_ROWS);
 
                   const shapeClasses =
                     table.shape === "round"
@@ -209,8 +209,7 @@ export default function GuestClient() {
                         }`}
                       style={{
                         left: `${leftPercent}%`,
-                        top: `${topPercent}%`,
-                        transform: "translate(-50%, -50%)"
+                        top: `${topPercent}%`
                       }}
                     >
                       {table.id}
