@@ -9,6 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
+  size?: number; // 🔥 added support for dynamic size
   render: {
     leftPercent: number;
     topPercent: number;
@@ -21,7 +22,7 @@ interface EventData {
   image: string | null;
   hostMessage?: string | null;
   menu?: string[] | null;
-  menuTitle?: string | null; // 🔥 dynamisk titel (Menu / Agenda)
+  menuTitle?: string | null;
   layout: {
     tables: Table[];
   };
@@ -182,12 +183,22 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
+                  // 🔥 Dynamic size support (fallback = 56px)
+                  const baseSize = 56;
+                  const multiplier = table.size ?? 1;
+                  const size = baseSize * multiplier;
+
+                  const styleSize =
+                    table.shape === "round"
+                      ? { width: size, height: size }
+                      : table.orientation === "vertical"
+                        ? { width: size * 0.6, height: size }
+                        : { width: size, height: size * 0.6 };
+
                   const shapeClasses =
                     table.shape === "round"
-                      ? "w-14 h-14 rounded-full"
-                      : table.orientation === "vertical"
-                        ? "w-12 h-20 rounded-xl"
-                        : "w-20 h-12 rounded-xl";
+                      ? "rounded-full"
+                      : "rounded-xl";
 
                   return (
                     <div
@@ -201,7 +212,8 @@ export default function GuestClient() {
                       style={{
                         left: `${table.render.leftPercent}%`,
                         top: `${table.render.topPercent}%`,
-                        transform: "translate(-50%, -50%)"
+                        transform: "translate(-50%, -50%)",
+                        ...styleSize
                       }}
                     >
                       {table.id}
