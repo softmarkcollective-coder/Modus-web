@@ -189,34 +189,22 @@ export default function GuestClient() {
                 className="relative w-full bg-black rounded-2xl overflow-hidden"
                 style={{ aspectRatio }}
               >
-
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  const base = 56; // fixed thickness reference
+                  const base = 56;
                   const length = base * (table.size ?? 1);
-                  const thickness = base; // width NEVER changes
+                  const fixedThickness = base;
 
                   let styleSize;
 
                   if (table.shape === "round") {
-                    // 🔥 Same diameter — but more air via visual padding buffer
-                    styleSize = {
-                      width: thickness,
-                      height: thickness,
-                      padding: "6px"   // adds spacing around circle
-                    };
+                    styleSize = { width: base, height: base };
                   } else if (table.orientation === "vertical") {
-                    styleSize = {
-                      width: thickness,
-                      height: length
-                    };
+                    styleSize = { width: fixedThickness, height: length };
                   } else {
-                    styleSize = {
-                      width: length,
-                      height: thickness
-                    };
+                    styleSize = { width: length, height: fixedThickness };
                   }
 
                   return (
@@ -231,7 +219,10 @@ export default function GuestClient() {
                       style={{
                         left: `${table.render.leftPercent}%`,
                         top: `${table.render.topPercent}%`,
-                        transform: "translate(-50%, -50%)",
+                        transform:
+                          table.shape === "round"
+                            ? "translate(-50%, -45%)" // 🔥 tiny vertical lift = more air
+                            : "translate(-50%, -50%)",
                         ...styleSize
                       }}
                     >
