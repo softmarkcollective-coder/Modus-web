@@ -107,7 +107,7 @@ export default function GuestClient() {
     );
   }
 
-  /* Dynamisk grid */
+  /* Dynamisk grid – matcher Vibecode */
   const maxX = Math.max(...event.layout.tables.map(t => t.x));
   const maxY = Math.max(...event.layout.tables.map(t => t.y));
 
@@ -184,12 +184,12 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  /* 🔥 KORREKT POSITION – ingen centrering */
+                  /* 🔥 KORREKT – center i grid cell */
                   const leftPercent =
-                    table.x * (100 / GRID_COLUMNS);
+                    (table.x + 0.5) * (100 / GRID_COLUMNS);
 
                   const topPercent =
-                    table.y * (100 / GRID_ROWS);
+                    (table.y + 0.5) * (100 / GRID_ROWS);
 
                   const shapeClasses =
                     table.shape === "round"
@@ -209,7 +209,8 @@ export default function GuestClient() {
                         }`}
                       style={{
                         left: `${leftPercent}%`,
-                        top: `${topPercent}%`
+                        top: `${topPercent}%`,
+                        transform: "translate(-50%, -50%)"
                       }}
                     >
                       {table.id}
