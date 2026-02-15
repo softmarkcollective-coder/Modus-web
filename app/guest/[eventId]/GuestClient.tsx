@@ -9,6 +9,11 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
+  size?: number;
+  render?: {
+    leftPercent: number;
+    topPercent: number;
+  };
 }
 
 interface EventData {
@@ -107,10 +112,6 @@ export default function GuestClient() {
     );
   }
 
-  /* Grid spacing — used ONLY as multiplier, not layout logic */
-  const CELL_WIDTH = 90;
-  const CELL_HEIGHT = 70;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -175,14 +176,16 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
+              {/* 🔥 IMPORTANT: overflow hidden keeps everything inside block */}
               <div className="relative h-72 bg-black rounded-2xl overflow-hidden">
 
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  const left = table.x * CELL_WIDTH;
-                  const top = table.y * CELL_HEIGHT;
+                  // 🔥 USE BACKEND RENDER COORDINATES ONLY
+                  const left = table.render?.leftPercent ?? 50;
+                  const top = table.render?.topPercent ?? 50;
 
                   const shape = table.shape;
                   const orientation = table.orientation;
@@ -206,8 +209,9 @@ export default function GuestClient() {
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        left: `${left}px`,
-                        top: `${top}px`
+                        left: `${left}%`,
+                        top: `${top}%`,
+                        transform: "translate(-50%, -50%)"
                       }}
                     >
                       {table.id}
