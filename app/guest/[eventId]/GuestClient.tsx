@@ -107,9 +107,8 @@ export default function GuestClient() {
     );
   }
 
-  /* 🔥 NEW: Stable grid spacing (replaces % calculation) */
-  const CELL_WIDTH = 90;
-  const CELL_HEIGHT = 70;
+  const maxX = Math.max(...event.layout.tables.map(t => t.x));
+  const maxY = Math.max(...event.layout.tables.map(t => t.y));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -181,12 +180,20 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  /* 🔥 NEW POSITIONING */
-                  const left = table.x * CELL_WIDTH;
-                  const top = table.y * CELL_HEIGHT;
+                  // ✅ JUSTERET LEFT-BEREGNING (sektionel alignment)
+                  const left =
+                    maxX === 0
+                      ? 50
+                      : table.x === 0
+                        ? 5
+                        : table.x === maxX
+                          ? 95
+                          : 50;
+
+                  const top = maxY === 0 ? 50 : (table.y / maxY) * 100;
 
                   const shape = table.shape;
-                  const orientation = table.orientation;
+                  const orientation = table.orientation?.toLowerCase();
 
                   const shapeClasses =
                     shape === "round"
@@ -207,8 +214,8 @@ export default function GuestClient() {
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        left: `${left}px`,
-                        top: `${top}px`,
+                        left: `${left}%`,
+                        top: `${top}%`,
                         transform: "translate(-50%, -50%)"
                       }}
                     >
