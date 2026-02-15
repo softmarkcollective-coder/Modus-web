@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 
 interface Table {
   id: number;
+  x: number;
+  y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  size?: number;
-  render?: {
-    leftPercent: number;
-    topPercent: number;
-  };
 }
 
 interface EventData {
@@ -110,6 +107,13 @@ export default function GuestClient() {
     );
   }
 
+  /* 🔥 DYNAMISK GRID (matcher Vibecode layout logik) */
+  const maxX = Math.max(...event.layout.tables.map(t => t.x));
+  const maxY = Math.max(...event.layout.tables.map(t => t.y));
+
+  const GRID_COLUMNS = maxX + 1;
+  const GRID_ROWS = maxY + 1;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -174,45 +178,38 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              {/* 👇 Matcher appens proportioner bedre */}
-              <div className="relative w-full aspect-[4/3] bg-black rounded-2xl overflow-hidden">
+              {/* 🔥 Container er nu proportional og fylder korrekt */}
+              <div className="relative w-full aspect-square bg-black rounded-2xl">
 
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // 🔥 Brug size fra backend
-                  const baseUnit = 28; // px multiplier
-                  const size = table.size ?? 2;
+                  const leftPercent =
+                    (table.x + 0.5) * (100 / GRID_COLUMNS);
 
-                  const width =
-                    table.shape === "round"
-                      ? baseUnit * size
-                      : table.orientation === "vertical"
-                        ? baseUnit
-                        : baseUnit * size;
+                  const topPercent =
+                    (table.y + 0.5) * (100 / GRID_ROWS);
 
-                  const height =
+                  const shapeClasses =
                     table.shape === "round"
-                      ? baseUnit * size
+                      ? "w-14 h-14 rounded-full"
                       : table.orientation === "vertical"
-                        ? baseUnit * size
-                        : baseUnit;
+                        ? "w-12 h-20 rounded-xl"
+                        : "w-20 h-12 rounded-xl";
 
                   return (
                     <div
                       key={table.id}
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
-                        ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
+                        ${shapeClasses}
                         ${isActive
-                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110 z-10"
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        width,
-                        height,
-                        left: `${table.render?.leftPercent ?? 50}%`,
-                        top: `${table.render?.topPercent ?? 50}%`,
+                        left: `${leftPercent}%`,
+                        top: `${topPercent}%`,
                         transform: "translate(-50%, -50%)"
                       }}
                     >
@@ -222,6 +219,26 @@ export default function GuestClient() {
                 })}
               </div>
             </div>
+
+            {event.hostMessage && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+                {event.hostMessage}
+              </div>
+            )}
+
+            {event.menu && event.menu.length > 0 && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                  Menu
+                </h3>
+                <ul className="space-y-3 text-neutral-300">
+                  {event.menu.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
           </div>
         )}
 
