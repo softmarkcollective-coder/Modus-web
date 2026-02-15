@@ -13,8 +13,8 @@ interface Table {
   render: {
     leftPercent: number;
     topPercent: number;
-    widthPercent: number;     // ✅ added
-    heightPercent: number;    // ✅ added
+    widthPercent: number;
+    heightPercent: number;
   };
 }
 
@@ -192,18 +192,18 @@ export default function GuestClient() {
                     <div
                       key={table.id}
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
-                        ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                         ${isActive
                           ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        position: "absolute",
                         left: `${table.render.leftPercent}%`,
                         top: `${table.render.topPercent}%`,
-                        width: `${table.render.widthPercent}%`,
-                        height: `${table.render.heightPercent}%`,
-                        transform: "translate(-50%, -50%)"
+                        width: `${table.render.widthPercent ?? 6}%`,
+                        height: `${table.render.heightPercent ?? 6}%`,
+                        transform: "translate(-50%, -50%)",
+                        borderRadius:
+                          table.shape === "round" ? "50%" : "12px"
                       }}
                     >
                       {table.id}
