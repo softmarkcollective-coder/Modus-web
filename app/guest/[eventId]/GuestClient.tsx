@@ -13,6 +13,8 @@ interface Table {
   render: {
     leftPercent: number;
     topPercent: number;
+    widthPercent: number;
+    heightPercent: number;
   };
 }
 
@@ -193,37 +195,21 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  const base = 56;
-                  const length = base * (table.size ?? 1);
-                  const fixedThickness = base;
-
-                  let styleSize;
-
-                  if (table.shape === "round") {
-                    styleSize = { width: base, height: base };
-                  } else if (table.orientation === "vertical") {
-                    styleSize = { width: fixedThickness, height: length };
-                  } else {
-                    styleSize = { width: length, height: fixedThickness };
-                  }
-
                   return (
                     <div
                       key={table.id}
                       className={`absolute flex items-center justify-center text-sm font-semibold transition-all
                         ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                         ${isActive
-                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)] scale-110"
+                          ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
                         left: `${table.render.leftPercent}%`,
                         top: `${table.render.topPercent}%`,
-                        transform:
-                          table.shape === "round"
-                            ? "translate(-50%, -50%) scale(0.94)" 
-                            : "translate(-50%, -50%)",
-                        ...styleSize
+                        width: `${table.render.widthPercent}%`,
+                        height: `${table.render.heightPercent}%`,
+                        transform: "translate(-50%, -50%)"
                       }}
                     >
                       {table.id}
