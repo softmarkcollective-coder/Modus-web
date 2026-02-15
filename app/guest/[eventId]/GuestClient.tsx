@@ -9,7 +9,7 @@ interface Table {
   y: number;
   shape: string;
   orientation?: "horizontal" | "vertical";
-  size?: number; // 🔥 support size 1-2-3
+  size?: number;
   render: {
     leftPercent: number;
     topPercent: number;
@@ -60,7 +60,7 @@ export default function GuestClient() {
     async function fetchEvent() {
       try {
         const res = await fetch(`/api/guest/event/${eventId}`, {
-          cache: "no-store" // 🔥 ensures live updates
+          cache: "no-store"
         });
 
         if (res.status === 404) {
@@ -90,7 +90,7 @@ export default function GuestClient() {
         `/api/guest/event/${eventId}/guest?name=${encodeURIComponent(
           guestName.trim()
         )}`,
-        { cache: "no-store" } // 🔥 live lookup
+        { cache: "no-store" }
       );
 
       const data = (await res.json()) as GuestResponse;
@@ -186,21 +186,20 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  // 🔥 dynamic size (1-2-3 clearly visible)
-                  const base = 48;
-                  const sizeMultiplier = table.size ?? 1;
-                  const size = base * sizeMultiplier;
+                  // 🔥 clear size difference
+                  const base = 42;
+                  const multiplier = table.size ?? 1;
+                  const size = base + multiplier * 24; 
+                  // size 1 = 66px
+                  // size 2 = 90px
+                  // size 3 = 114px
 
                   const styleSize =
                     table.shape === "round"
                       ? { width: size, height: size }
                       : table.orientation === "vertical"
-                        ? { width: size * 0.6, height: size }
-                        : { width: size, height: size * 0.6 };
-
-                  // 🔥 small visual spacing boost for round tables
-                  const spacingAdjust =
-                    table.shape === "round" ? 1.5 : 0;
+                        ? { width: size * 0.55, height: size }
+                        : { width: size, height: size * 0.55 };
 
                   return (
                     <div
@@ -213,7 +212,7 @@ export default function GuestClient() {
                         }`}
                       style={{
                         left: `${table.render.leftPercent}%`,
-                        top: `${table.render.topPercent + spacingAdjust}%`,
+                        top: `${table.render.topPercent}%`,
                         transform: "translate(-50%, -50%)",
                         ...styleSize
                       }}
