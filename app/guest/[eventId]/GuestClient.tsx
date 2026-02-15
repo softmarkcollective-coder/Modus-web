@@ -174,19 +174,19 @@ export default function GuestClient() {
                 Seating Plan
               </p>
 
-              {/* 👇 Container fylder korrekt og er proportional */}
               <div className="relative w-full aspect-square bg-black rounded-2xl">
 
                 {event.layout.tables.map((table) => {
 
                   const isActive = table.id === guestResult.guest.table;
 
+                  // ✅ FIX: Proportional sizing (matches percent-based positioning)
                   const shapeClasses =
                     table.shape === "round"
-                      ? "w-14 h-14 rounded-full"
+                      ? "w-[12%] aspect-square rounded-full"
                       : table.orientation === "vertical"
-                        ? "w-12 h-20 rounded-xl"
-                        : "w-20 h-12 rounded-xl";
+                        ? "w-[10%] h-[22%] rounded-xl"
+                        : "w-[22%] h-[10%] rounded-xl";
 
                   return (
                     <div
