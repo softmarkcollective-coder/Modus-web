@@ -11,8 +11,8 @@ interface Table {
   render?: {
     leftPercent: number;
     topPercent: number;
-    widthPercent: number;
-    heightPercent: number;
+    widthPercent: number;   // ✅ use backend dimension
+    heightPercent: number;  // ✅ use backend dimension
   };
 }
 
@@ -182,8 +182,6 @@ export default function GuestClient() {
 
                   const isActive = table.id === guestResult.guest.table;
 
-                  if (!table.render) return null;
-
                   return (
                     <div
                       key={table.id}
@@ -193,10 +191,10 @@ export default function GuestClient() {
                           : "bg-neutral-700 text-neutral-300"
                         }`}
                       style={{
-                        left: `${table.render.leftPercent}%`,
-                        top: `${table.render.topPercent}%`,
-                        width: `${table.render.widthPercent}%`,
-                        height: `${table.render.heightPercent}%`,
+                        left: `${table.render?.leftPercent ?? 50}%`,
+                        top: `${table.render?.topPercent ?? 50}%`,
+                        width: `${table.render?.widthPercent ?? 8}%`,
+                        height: `${table.render?.heightPercent ?? 8}%`,
                         transform: "translate(-50%, -50%)",
                         borderRadius: table.shape === "round" ? "50%" : "12px"
                       }}
