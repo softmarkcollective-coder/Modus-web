@@ -152,6 +152,8 @@ export default function GuestClient() {
   const offsetX = (100 - layoutWidth * scale) / 2 - (minLeft * scale);
   const offsetY = (100 - layoutHeight * scale) / 2 - (minTop * scale);
 
+  const EPSILON = 0.1; // tiny shrink to prevent overlap
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -225,8 +227,11 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
-                    const width = Math.max(0, table.render.widthPercent * scale - 0.1);
-                    const height = Math.max(0, table.render.heightPercent * scale - 0.1);
+                    const scaledWidth = table.render.widthPercent * scale;
+                    const scaledHeight = table.render.heightPercent * scale;
+
+                    const width = scaledWidth - EPSILON;
+                    const height = scaledHeight - EPSILON;
 
                     return (
                       <div
