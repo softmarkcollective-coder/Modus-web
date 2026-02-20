@@ -225,8 +225,18 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
-                    const width = Math.max(0, table.render.widthPercent * scale - 0.6);
-                    const height = Math.max(0, table.render.heightPercent * scale - 0.6);
+                    // 🔥 Precision match (2 decimal rounding)
+                    const left =
+                      Math.round((table.render.leftPercent * scale + offsetX) * 100) / 100;
+
+                    const top =
+                      Math.round((table.render.topPercent * scale + offsetY) * 100) / 100;
+
+                    const width =
+                      Math.round((table.render.widthPercent * scale) * 100) / 100;
+
+                    const height =
+                      Math.round((table.render.heightPercent * scale) * 100) / 100;
 
                     return (
                       <div
@@ -238,8 +248,8 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.render.leftPercent * scale + offsetX}%`,
-                          top: `${table.render.topPercent * scale + offsetY}%`,
+                          left: `${left}%`,
+                          top: `${top}%`,
                           width: `${width}%`,
                           height: `${height}%`,
                           transform: "translate(-50%, -50%)",
