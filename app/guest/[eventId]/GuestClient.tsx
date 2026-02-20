@@ -122,7 +122,7 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
-  const EDGE_PADDING = 4; // 4% safe margin from edges
+  const EDGE_PADDING = 4;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -219,7 +219,7 @@ export default function GuestClient() {
                     return (
                       <div
                         key={table.id}
-                        className={`absolute flex items-center justify-center text-sm font-semibold transition-all
+                        className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
                           ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                           ${isActive
                             ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
