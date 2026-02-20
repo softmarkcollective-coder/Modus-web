@@ -123,7 +123,7 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
-  // 🔥 Bounding box
+  // 🔥 Bounding box calculation
   let minLeft = Infinity;
   let maxRight = -Infinity;
   let minTop = Infinity;
@@ -142,17 +142,17 @@ export default function GuestClient() {
   const layoutWidth = maxRight - minLeft;
   const layoutHeight = maxBottom - minTop;
 
-  // 🔥 Safe padding area (justering her)
-  const SAFE_AREA = 92; // giver luft til kanten
+  // 🔥 Safe padding (gives visible margin like app)
+  const SAFE_PERCENT = 90;
 
   const scale = Math.min(
-    SAFE_AREA / layoutWidth,
-    SAFE_AREA / layoutHeight,
+    SAFE_PERCENT / layoutWidth,
+    SAFE_PERCENT / layoutHeight,
     1
   );
 
-  const offsetX = (100 - layoutWidth * scale) / 2 - minLeft * scale;
-  const offsetY = (100 - layoutHeight * scale) / 2 - minTop * scale;
+  const offsetX = (100 - layoutWidth * scale) / 2;
+  const offsetY = (100 - layoutHeight * scale) / 2;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -227,6 +227,12 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
+                    const normalizedLeft =
+                      (table.render.leftPercent - minLeft) * scale;
+
+                    const normalizedTop =
+                      (table.render.topPercent - minTop) * scale;
+
                     return (
                       <div
                         key={table.id}
@@ -237,8 +243,8 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.render.leftPercent * scale + offsetX}%`,
-                          top: `${table.render.topPercent * scale + offsetY}%`,
+                          left: `${normalizedLeft + offsetX}%`,
+                          top: `${normalizedTop + offsetY}%`,
                           width: `${table.render.widthPercent * scale}%`,
                           height: `${table.render.heightPercent * scale}%`,
                           transform: "translate(-50%, -50%)",
