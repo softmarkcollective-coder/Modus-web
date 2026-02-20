@@ -122,7 +122,6 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
-  const EDGE_PADDING = 4;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -197,34 +196,6 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
-                    let width = table.render.widthPercent;
-                    let left = table.render.leftPercent;
-
-                    // --- DATA-BASED JUSTERING ---
-                    if (table.orientation === "horizontal" && table.size === 3) {
-                      width = width * 1.08; // gør centerbord en smule bredere
-                    }
-
-                    if (table.orientation === "vertical" && table.size === 1) {
-                      left = left + 2; // træk sidekolonne en smule ind
-                    }
-                    // --------------------------------
-
-                    const halfWidth = width / 2;
-                    const halfHeight = table.render.heightPercent / 2;
-
-                    const minLeft = EDGE_PADDING + halfWidth;
-                    const maxLeft = 100 - EDGE_PADDING - halfWidth;
-
-                    const minTop = EDGE_PADDING + halfHeight;
-                    const maxTop = 100 - EDGE_PADDING - halfHeight;
-
-                    const safeLeft = Math.min(Math.max(left, minLeft), maxLeft);
-                    const safeTop = Math.min(
-                      Math.max(table.render.topPercent, minTop),
-                      maxTop
-                    );
-
                     return (
                       <div
                         key={table.id}
@@ -235,9 +206,9 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${safeLeft}%`,
-                          top: `${safeTop}%`,
-                          width: `${width}%`,
+                          left: `${table.render.leftPercent}%`,
+                          top: `${table.render.topPercent}%`,
+                          width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
