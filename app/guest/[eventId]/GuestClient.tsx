@@ -123,7 +123,7 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
-  // 🔥 Beregn layoutets reelle bounding box
+  // 🔥 Bounding box
   let minLeft = Infinity;
   let maxRight = -Infinity;
   let minTop = Infinity;
@@ -142,8 +142,15 @@ export default function GuestClient() {
   const layoutWidth = maxRight - minLeft;
   const layoutHeight = maxBottom - minTop;
 
-  const offsetX = (100 - layoutWidth) / 2 - minLeft;
-  const offsetY = (100 - layoutHeight) / 2 - minTop;
+  // 🔥 Scale only if necessary
+  const scale = Math.min(
+    100 / layoutWidth,
+    100 / layoutHeight,
+    1
+  );
+
+  const offsetX = (100 - layoutWidth * scale) / 2 - minLeft * scale;
+  const offsetY = (100 - layoutHeight * scale) / 2 - minTop * scale;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -228,10 +235,10 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.render.leftPercent + offsetX}%`,
-                          top: `${table.render.topPercent + offsetY}%`,
-                          width: `${table.render.widthPercent}%`,
-                          height: `${table.render.heightPercent}%`,
+                          left: `${table.render.leftPercent * scale + offsetX}%`,
+                          top: `${table.render.topPercent * scale + offsetY}%`,
+                          width: `${table.render.widthPercent * scale}%`,
+                          height: `${table.render.heightPercent * scale}%`,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
