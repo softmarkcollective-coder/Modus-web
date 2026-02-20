@@ -123,80 +123,38 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
-  // 🔥 NORMALISER HELE LAYOUTET (ingen hardcode, ingen gæt)
-  const normalizedTables = useMemo(() => {
+  // 🔥 Kun translation – ingen scaling
+  const translatedTables = useMemo(() => {
     const tables = event.layout.tables;
 
-    let minLeft = Infinity;
-    let maxRight = -Infinity;
-    let minTop = Infinity;
-    let maxBottom = -Infinity;
+    let minLeftEdge = Infinity;
+    let minTopEdge = Infinity;
 
     tables.forEach((t) => {
       const halfW = t.render.widthPercent / 2;
       const halfH = t.render.heightPercent / 2;
 
       const leftEdge = t.render.leftPercent - halfW;
-      const rightEdge = t.render.leftPercent + halfW;
-      const topEdge = t.render.topPercent - halfH;
-      const bottomEdge = t.render.topPercent + halfH;
-
-      minLeft = Math.min(minLeft, leftEdge);
-      maxRight = Math.max(maxRight, rightEdge);
-      minTop = Math.min(minTop, topEdge);
-      maxBottom = Math.max(maxBottom, bottomEdge);
-    });
-
-    const widthSpan = maxRight - minLeft;
-    const heightSpan = maxBottom - minTop;
-
-    return tables.map((t) => {
-      const halfW = t.render.widthPercent / 2;
-      const halfH = t.render.heightPercent / 2;
-
-      const leftEdge = t.render.leftPercent - halfW;
       const topEdge = t.render.topPercent - halfH;
 
-      const normalizedLeft =
-        ((leftEdge - minLeft) / widthSpan) * 100 + halfW;
-
-      const normalizedTop =
-        ((topEdge - minTop) / heightSpan) * 100 + halfH;
-
-      return {
-        ...t,
-        normalizedLeft,
-        normalizedTop
-      };
+      minLeftEdge = Math.min(minLeftEdge, leftEdge);
+      minTopEdge = Math.min(minTopEdge, topEdge);
     });
+
+    // Flyt hele layoutet så mindste kant rammer 0
+    const offsetX = minLeftEdge < 0 ? -minLeftEdge : 0;
+    const offsetY = minTopEdge < 0 ? -minTopEdge : 0;
+
+    return tables.map((t) => ({
+      ...t,
+      adjustedLeft: t.render.leftPercent + offsetX,
+      adjustedTop: t.render.topPercent + offsetY
+    }));
   }, [event]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
-
-        <form onSubmit={handleGuestLookup} className="space-y-5">
-          <input
-            type="text"
-            value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
-            placeholder="Enter your name"
-            className="w-full px-6 py-4 rounded-2xl bg-neutral-900 border border-neutral-800
-                       focus:outline-none focus:ring-2 focus:ring-[#d6b25e]
-                       text-white text-lg text-center"
-          />
-
-          <button
-            type="submit"
-            disabled={guestLoading || !guestName.trim()}
-            className="w-full py-4 rounded-2xl font-semibold text-lg text-black
-                       bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f]
-                       shadow-[0_10px_30px_rgba(214,178,94,0.35)]
-                       hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            {guestLoading ? "..." : "Show my table"}
-          </button>
-        </form>
 
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
@@ -207,7 +165,7 @@ export default function GuestClient() {
                   className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-visible"
                   style={{ aspectRatio }}
                 >
-                  {normalizedTables.map((table) => {
+                  {translatedTables.map((table) => {
 
                     const isActive =
                       table.id === guestResult.guest.table;
@@ -222,8 +180,8 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.normalizedLeft}%`,
-                          top: `${table.normalizedTop}%`,
+                          left: `${table.adjustedLeft}%`,
+                          top: `${table.adjustedTop}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
