@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 
 interface Table {
@@ -123,33 +123,6 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
-  // 🔥 Udregn appens egen margin (ingen hardcode)
-  const layoutMargin = useMemo(() => {
-    if (!event) return 0;
-
-    let minMargin = 100;
-
-    event.layout.tables.forEach((table) => {
-      const halfW = table.render.widthPercent / 2;
-      const halfH = table.render.heightPercent / 2;
-
-      const leftEdge = table.render.leftPercent - halfW;
-      const rightEdge = 100 - (table.render.leftPercent + halfW);
-      const topEdge = table.render.topPercent - halfH;
-      const bottomEdge = 100 - (table.render.topPercent + halfH);
-
-      minMargin = Math.min(
-        minMargin,
-        leftEdge,
-        rightEdge,
-        topEdge,
-        bottomEdge
-      );
-    });
-
-    return minMargin;
-  }, [event]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -216,25 +189,12 @@ export default function GuestClient() {
 
               <div className="w-full flex justify-center">
                 <div
-                  className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-visible"
+                  className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-hidden"
                   style={{ aspectRatio }}
                 >
                   {event.layout.tables.map((table) => {
 
                     const isActive = table.id === guestResult.guest.table;
-
-                    const halfW = table.render.widthPercent / 2;
-                    const halfH = table.render.heightPercent / 2;
-
-                    const correctedLeft = Math.min(
-                      Math.max(table.render.leftPercent, layoutMargin + halfW),
-                      100 - layoutMargin - halfW
-                    );
-
-                    const correctedTop = Math.min(
-                      Math.max(table.render.topPercent, layoutMargin + halfH),
-                      100 - layoutMargin - halfH
-                    );
 
                     return (
                       <div
@@ -246,8 +206,8 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${correctedLeft}%`,
-                          top: `${correctedTop}%`,
+                          left: `${table.render.leftPercent}%`,
+                          top: `${table.render.topPercent}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
