@@ -123,35 +123,6 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
-  let minLeft = Infinity;
-  let maxRight = -Infinity;
-  let minTop = Infinity;
-  let maxBottom = -Infinity;
-
-  event.layout.tables.forEach((t) => {
-    const halfW = t.render.widthPercent / 2;
-    const halfH = t.render.heightPercent / 2;
-
-    minLeft = Math.min(minLeft, t.render.leftPercent - halfW);
-    maxRight = Math.max(maxRight, t.render.leftPercent + halfW);
-    minTop = Math.min(minTop, t.render.topPercent - halfH);
-    maxBottom = Math.max(maxBottom, t.render.topPercent + halfH);
-  });
-
-  const layoutWidth = maxRight - minLeft;
-  const layoutHeight = maxBottom - minTop;
-
-  const SAFE_PERCENT = 90;
-
-  const scale = Math.min(
-    SAFE_PERCENT / layoutWidth,
-    SAFE_PERCENT / layoutHeight,
-    1
-  );
-
-  const offsetX = (100 - layoutWidth * scale) / 2 - (minLeft * scale);
-  const offsetY = (100 - layoutHeight * scale) / 2 - (minTop * scale);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -225,19 +196,6 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
-                    // 🔥 Precision match (2 decimal rounding)
-                    const left =
-                      Math.round((table.render.leftPercent * scale + offsetX) * 100) / 100;
-
-                    const top =
-                      Math.round((table.render.topPercent * scale + offsetY) * 100) / 100;
-
-                    const width =
-                      Math.round((table.render.widthPercent * scale) * 100) / 100;
-
-                    const height =
-                      Math.round((table.render.heightPercent * scale) * 100) / 100;
-
                     return (
                       <div
                         key={table.id}
@@ -248,10 +206,10 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${left}%`,
-                          top: `${top}%`,
-                          width: `${width}%`,
-                          height: `${height}%`,
+                          left: `${table.render.leftPercent}%`,
+                          top: `${table.render.topPercent}%`,
+                          width: `${table.render.widthPercent}%`,
+                          height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
