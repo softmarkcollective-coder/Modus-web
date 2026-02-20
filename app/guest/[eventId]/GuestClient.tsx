@@ -142,10 +142,12 @@ export default function GuestClient() {
   const layoutWidth = maxRight - minLeft;
   const layoutHeight = maxBottom - minTop;
 
-  // 🔥 Scale only if necessary
+  // 🔥 Safe padding area (justering her)
+  const SAFE_AREA = 92; // giver luft til kanten
+
   const scale = Math.min(
-    100 / layoutWidth,
-    100 / layoutHeight,
+    SAFE_AREA / layoutWidth,
+    SAFE_AREA / layoutHeight,
     1
   );
 
