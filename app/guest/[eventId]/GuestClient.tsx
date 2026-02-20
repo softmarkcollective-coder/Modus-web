@@ -122,7 +122,6 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
-  const EDGE_MARGIN = 3; // % afstand fra rammen
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -190,7 +189,7 @@ export default function GuestClient() {
 
               <div className="w-full flex justify-center">
                 <div
-                  className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-visible"
+                  className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-hidden"
                   style={{ aspectRatio }}
                 >
                   {event.layout.tables.map((table) => {
@@ -200,20 +199,22 @@ export default function GuestClient() {
                     const halfWidth = table.render.widthPercent / 2;
                     const halfHeight = table.render.heightPercent / 2;
 
-                    const minLeft = EDGE_MARGIN + halfWidth;
-                    const maxLeft = 100 - EDGE_MARGIN - halfWidth;
-                    const minTop = EDGE_MARGIN + halfHeight;
-                    const maxTop = 100 - EDGE_MARGIN - halfHeight;
+                    let correctedLeft = table.render.leftPercent;
+                    let correctedTop = table.render.topPercent;
 
-                    const safeLeft = Math.min(
-                      Math.max(table.render.leftPercent, minLeft),
-                      maxLeft
-                    );
-
-                    const safeTop = Math.min(
-                      Math.max(table.render.topPercent, minTop),
-                      maxTop
-                    );
+                    // Kun korriger hvis kanten overskrider rammen
+                    if (correctedLeft - halfWidth < 0) {
+                      correctedLeft = halfWidth;
+                    }
+                    if (correctedLeft + halfWidth > 100) {
+                      correctedLeft = 100 - halfWidth;
+                    }
+                    if (correctedTop - halfHeight < 0) {
+                      correctedTop = halfHeight;
+                    }
+                    if (correctedTop + halfHeight > 100) {
+                      correctedTop = 100 - halfHeight;
+                    }
 
                     return (
                       <div
@@ -225,8 +226,8 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${safeLeft}%`,
-                          top: `${safeTop}%`,
+                          left: `${correctedLeft}%`,
+                          top: `${correctedTop}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
