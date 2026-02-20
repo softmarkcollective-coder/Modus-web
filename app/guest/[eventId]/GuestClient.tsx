@@ -188,7 +188,7 @@ export default function GuestClient() {
               </p>
 
               <div
-                className="relative w-full bg-black rounded-2xl overflow-hidden"
+                className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-hidden"
                 style={{ aspectRatio }}
               >
                 {event.layout.tables.map((table) => {
