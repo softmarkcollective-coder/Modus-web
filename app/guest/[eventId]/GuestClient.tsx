@@ -199,6 +199,16 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
+                    const widthPercent =
+                      table.orientation === "vertical"
+                        ? table.render.heightPercent
+                        : table.render.widthPercent;
+
+                    const heightPercent =
+                      table.orientation === "vertical"
+                        ? table.render.widthPercent
+                        : table.render.heightPercent;
+
                     return (
                       <div
                         key={table.id}
@@ -211,8 +221,8 @@ export default function GuestClient() {
                         style={{
                           left: `${table.render.leftPercent}%`,
                           top: `${table.render.topPercent}%`,
-                          width: `${table.render.widthPercent}%`,
-                          height: `${table.render.heightPercent}%`,
+                          width: `${widthPercent}%`,
+                          height: `${heightPercent}%`,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
