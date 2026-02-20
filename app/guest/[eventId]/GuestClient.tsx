@@ -196,26 +196,6 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
-                    const halfWidth = table.render.widthPercent / 2;
-                    const halfHeight = table.render.heightPercent / 2;
-
-                    let correctedLeft = table.render.leftPercent;
-                    let correctedTop = table.render.topPercent;
-
-                    // Kun korriger hvis kanten overskrider rammen
-                    if (correctedLeft - halfWidth < 0) {
-                      correctedLeft = halfWidth;
-                    }
-                    if (correctedLeft + halfWidth > 100) {
-                      correctedLeft = 100 - halfWidth;
-                    }
-                    if (correctedTop - halfHeight < 0) {
-                      correctedTop = halfHeight;
-                    }
-                    if (correctedTop + halfHeight > 100) {
-                      correctedTop = 100 - halfHeight;
-                    }
-
                     return (
                       <div
                         key={table.id}
@@ -226,8 +206,8 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${correctedLeft}%`,
-                          top: `${correctedTop}%`,
+                          left: `${table.render.leftPercent}%`,
+                          top: `${table.render.topPercent}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
