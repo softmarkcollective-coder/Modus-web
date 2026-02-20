@@ -123,35 +123,11 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
-  // 🔥 Bounding box
-  let minLeft = Infinity;
-  let maxRight = -Infinity;
-  let minTop = Infinity;
-  let maxBottom = -Infinity;
-
-  event.layout.tables.forEach((t) => {
-    const halfW = t.render.widthPercent / 2;
-    const halfH = t.render.heightPercent / 2;
-
-    minLeft = Math.min(minLeft, t.render.leftPercent - halfW);
-    maxRight = Math.max(maxRight, t.render.leftPercent + halfW);
-    minTop = Math.min(minTop, t.render.topPercent - halfH);
-    maxBottom = Math.max(maxBottom, t.render.topPercent + halfH);
-  });
-
-  const layoutWidth = maxRight - minLeft;
-  const layoutHeight = maxBottom - minTop;
-
+  // 🔥 Global scale only (no bounding box manipulation)
   const SAFE_PERCENT = 90;
+  const scale = SAFE_PERCENT / 100;
 
-  const scale = Math.min(
-    SAFE_PERCENT / layoutWidth,
-    SAFE_PERCENT / layoutHeight,
-    1
-  );
-
-  const offsetX = (100 - layoutWidth * scale) / 2 - (minLeft * scale);
-  const offsetY = (100 - layoutHeight * scale) / 2 - (minTop * scale);
+  const offset = (100 - SAFE_PERCENT) / 2;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -236,8 +212,8 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.render.leftPercent * scale + offsetX}%`,
-                          top: `${table.render.topPercent * scale + offsetY}%`,
+                          left: `${table.render.leftPercent * scale + offset}%`,
+                          top: `${table.render.topPercent * scale + offset}%`,
                           width: `${table.render.widthPercent * scale}%`,
                           height: `${table.render.heightPercent * scale}%`,
                           transform: "translate(-50%, -50%)",
