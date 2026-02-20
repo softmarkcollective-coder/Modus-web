@@ -123,7 +123,6 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
-  // 🔥 Bounding box
   let minLeft = Infinity;
   let maxRight = -Infinity;
   let minTop = Infinity;
@@ -152,36 +151,6 @@ export default function GuestClient() {
 
   const offsetX = (100 - layoutWidth * scale) / 2 - (minLeft * scale);
   const offsetY = (100 - layoutHeight * scale) / 2 - (minTop * scale);
-
-  // 🔥 Anti-overlap calculation (minimal safe adjustment)
-  const renderedTables = event.layout.tables.map((table) => {
-    return {
-      ...table,
-      computedLeft: table.render.leftPercent * scale + offsetX,
-      computedTop: table.render.topPercent * scale + offsetY,
-      computedWidth: table.render.widthPercent * scale,
-      computedHeight: table.render.heightPercent * scale
-    };
-  });
-
-  for (let i = 0; i < renderedTables.length; i++) {
-    for (let j = i + 1; j < renderedTables.length; j++) {
-      const a = renderedTables[i];
-      const b = renderedTables[j];
-
-      const dx = Math.abs(a.computedLeft - b.computedLeft);
-      const dy = Math.abs(a.computedTop - b.computedTop);
-
-      const minX = (a.computedWidth + b.computedWidth) / 2;
-      const minY = (a.computedHeight + b.computedHeight) / 2;
-
-      if (dx < minX && dy < minY) {
-        // Push only horizontally to preserve layout form
-        const overlap = minX - dx;
-        b.computedLeft += overlap;
-      }
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -252,9 +221,12 @@ export default function GuestClient() {
                   className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-visible"
                   style={{ aspectRatio }}
                 >
-                  {renderedTables.map((table) => {
+                  {event.layout.tables.map((table) => {
 
                     const isActive = table.id === guestResult.guest.table;
+
+                    const width = Math.max(0, table.render.widthPercent * scale - 0.1);
+                    const height = Math.max(0, table.render.heightPercent * scale - 0.1);
 
                     return (
                       <div
@@ -266,10 +238,10 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.computedLeft}%`,
-                          top: `${table.computedTop}%`,
-                          width: `${table.computedWidth}%`,
-                          height: `${table.computedHeight}%`,
+                          left: `${table.render.leftPercent * scale + offsetX}%`,
+                          top: `${table.render.topPercent * scale + offsetY}%`,
+                          width: `${width}%`,
+                          height: `${height}%`,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
