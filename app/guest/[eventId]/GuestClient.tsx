@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 
 interface Table {
@@ -123,29 +123,57 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
+  // 🔥 NORMALISER HELE LAYOUTET (ingen hardcode, ingen gæt)
+  const normalizedTables = useMemo(() => {
+    const tables = event.layout.tables;
+
+    let minLeft = Infinity;
+    let maxRight = -Infinity;
+    let minTop = Infinity;
+    let maxBottom = -Infinity;
+
+    tables.forEach((t) => {
+      const halfW = t.render.widthPercent / 2;
+      const halfH = t.render.heightPercent / 2;
+
+      const leftEdge = t.render.leftPercent - halfW;
+      const rightEdge = t.render.leftPercent + halfW;
+      const topEdge = t.render.topPercent - halfH;
+      const bottomEdge = t.render.topPercent + halfH;
+
+      minLeft = Math.min(minLeft, leftEdge);
+      maxRight = Math.max(maxRight, rightEdge);
+      minTop = Math.min(minTop, topEdge);
+      maxBottom = Math.max(maxBottom, bottomEdge);
+    });
+
+    const widthSpan = maxRight - minLeft;
+    const heightSpan = maxBottom - minTop;
+
+    return tables.map((t) => {
+      const halfW = t.render.widthPercent / 2;
+      const halfH = t.render.heightPercent / 2;
+
+      const leftEdge = t.render.leftPercent - halfW;
+      const topEdge = t.render.topPercent - halfH;
+
+      const normalizedLeft =
+        ((leftEdge - minLeft) / widthSpan) * 100 + halfW;
+
+      const normalizedTop =
+        ((topEdge - minTop) / heightSpan) * 100 + halfH;
+
+      return {
+        ...t,
+        normalizedLeft,
+        normalizedTop
+      };
+    });
+  }, [event]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
-
-        {event.image && event.image.startsWith("http") && (
-          <div className="relative">
-            <img
-              src={event.image}
-              alt={event.name}
-              className="w-full h-52 object-cover rounded-3xl shadow-2xl"
-            />
-            <div className="absolute inset-0 bg-black/40 rounded-3xl" />
-          </div>
-        )}
-
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.4em] text-neutral-500">
-            {event.name}
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-semibold">
-            Find your seat
-          </h1>
-        </div>
 
         <form onSubmit={handleGuestLookup} className="space-y-5">
           <input
@@ -173,61 +201,29 @@ export default function GuestClient() {
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
-            <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
-              <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
-                You are seated at
-              </p>
-              <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
-                Table {guestResult.guest.table}
-              </div>
-            </div>
-
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-              <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
-                Seating Plan
-              </p>
-
               <div className="w-full flex justify-center">
                 <div
                   className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-visible"
                   style={{ aspectRatio }}
                 >
-                  {event.layout.tables.map((table) => {
+                  {normalizedTables.map((table) => {
 
-                    const isActive = table.id === guestResult.guest.table;
-
-                    const halfW = table.render.widthPercent / 2;
-                    const halfH = table.render.heightPercent / 2;
-
-                    let left = table.render.leftPercent;
-                    let top = table.render.topPercent;
-
-                    // 🔥 Kun hvis kanten går udenfor, justér præcist nok
-                    if (left - halfW < 0) {
-                      left = halfW;
-                    }
-                    if (left + halfW > 100) {
-                      left = 100 - halfW;
-                    }
-                    if (top - halfH < 0) {
-                      top = halfH;
-                    }
-                    if (top + halfH > 100) {
-                      top = 100 - halfH;
-                    }
+                    const isActive =
+                      table.id === guestResult.guest.table;
 
                     return (
                       <div
                         key={table.id}
-                        className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
+                        className={`absolute flex items-center justify-center text-sm font-semibold
                           ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                           ${isActive
-                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
+                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black"
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${left}%`,
-                          top: `${top}%`,
+                          left: `${table.normalizedLeft}%`,
+                          top: `${table.normalizedTop}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
@@ -242,32 +238,8 @@ export default function GuestClient() {
               </div>
             </div>
 
-            {event.hostMessage && (
-              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
-                {event.hostMessage}
-              </div>
-            )}
-
-            {event.menu && event.menu.length > 0 && (
-              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
-                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                  {event.menuTitle ?? "Menu"}
-                </h3>
-                <ul className="space-y-3 text-neutral-300">
-                  {event.menu.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
           </div>
         )}
-
-        <div className="text-neutral-600 text-sm">
-          {event.layout.tables.length} tables at this event
-        </div>
-
       </div>
     </div>
   );
