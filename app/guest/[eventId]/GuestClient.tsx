@@ -122,6 +122,7 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
+  const EDGE_MARGIN = 3; // % afstand fra rammen
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -196,6 +197,24 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
+                    const halfWidth = table.render.widthPercent / 2;
+                    const halfHeight = table.render.heightPercent / 2;
+
+                    const minLeft = EDGE_MARGIN + halfWidth;
+                    const maxLeft = 100 - EDGE_MARGIN - halfWidth;
+                    const minTop = EDGE_MARGIN + halfHeight;
+                    const maxTop = 100 - EDGE_MARGIN - halfHeight;
+
+                    const safeLeft = Math.min(
+                      Math.max(table.render.leftPercent, minLeft),
+                      maxLeft
+                    );
+
+                    const safeTop = Math.min(
+                      Math.max(table.render.topPercent, minTop),
+                      maxTop
+                    );
+
                     return (
                       <div
                         key={table.id}
@@ -206,8 +225,8 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.render.leftPercent}%`,
-                          top: `${table.render.topPercent}%`,
+                          left: `${safeLeft}%`,
+                          top: `${safeTop}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
