@@ -189,7 +189,7 @@ export default function GuestClient() {
 
               <div className="w-full flex justify-center">
                 <div
-                  className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-visible"
+                  className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-hidden"
                   style={{ aspectRatio }}
                 >
                   {event.layout.tables.map((table) => {
@@ -210,7 +210,6 @@ export default function GuestClient() {
                           top: `${table.render.topPercent}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
-                          transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
                       >
