@@ -29,8 +29,6 @@ interface EventData {
     tables: Table[];
     metadata?: {
       aspectRatio?: number;
-      totalWidth?: number;
-      totalHeight?: number;
     };
   };
 }
@@ -125,17 +123,92 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
-  const totalWidth = event.layout.metadata?.totalWidth ?? 100;
-  const totalHeight = event.layout.metadata?.totalHeight ?? 100;
+  // 🔥 Beregn layoutets reelle bounding box
+  let minLeft = Infinity;
+  let maxRight = -Infinity;
+  let minTop = Infinity;
+  let maxBottom = -Infinity;
+
+  event.layout.tables.forEach((t) => {
+    const halfW = t.render.widthPercent / 2;
+    const halfH = t.render.heightPercent / 2;
+
+    minLeft = Math.min(minLeft, t.render.leftPercent - halfW);
+    maxRight = Math.max(maxRight, t.render.leftPercent + halfW);
+    minTop = Math.min(minTop, t.render.topPercent - halfH);
+    maxBottom = Math.max(maxBottom, t.render.topPercent + halfH);
+  });
+
+  const layoutWidth = maxRight - minLeft;
+  const layoutHeight = maxBottom - minTop;
+
+  const offsetX = (100 - layoutWidth) / 2 - minLeft;
+  const offsetY = (100 - layoutHeight) / 2 - minTop;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
+        {event.image && event.image.startsWith("http") && (
+          <div className="relative">
+            <img
+              src={event.image}
+              alt={event.name}
+              className="w-full h-52 object-cover rounded-3xl shadow-2xl"
+            />
+            <div className="absolute inset-0 bg-black/40 rounded-3xl" />
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.4em] text-neutral-500">
+            {event.name}
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-semibold">
+            Find your seat
+          </h1>
+        </div>
+
+        <form onSubmit={handleGuestLookup} className="space-y-5">
+          <input
+            type="text"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            placeholder="Enter your name"
+            className="w-full px-6 py-4 rounded-2xl bg-neutral-900 border border-neutral-800
+                       focus:outline-none focus:ring-2 focus:ring-[#d6b25e]
+                       text-white text-lg text-center"
+          />
+
+          <button
+            type="submit"
+            disabled={guestLoading || !guestName.trim()}
+            className="w-full py-4 rounded-2xl font-semibold text-lg text-black
+                       bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f]
+                       shadow-[0_10px_30px_rgba(214,178,94,0.35)]
+                       hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            {guestLoading ? "..." : "Show my table"}
+          </button>
+        </form>
+
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
+            <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
+              <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
+                You are seated at
+              </p>
+              <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
+                Table {guestResult.guest.table}
+              </div>
+            </div>
+
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
+              <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
+                Seating Plan
+              </p>
+
               <div className="w-full flex justify-center">
                 <div
                   className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-visible"
@@ -144,19 +217,6 @@ export default function GuestClient() {
                   {event.layout.tables.map((table) => {
 
                     const isActive = table.id === guestResult.guest.table;
-
-                    // 🔥 Konverter fra appens canvas til web canvas
-                    const left =
-                      (table.render.leftPercent / 100) * totalWidth;
-
-                    const top =
-                      (table.render.topPercent / 100) * totalHeight;
-
-                    const width =
-                      (table.render.widthPercent / 100) * totalWidth;
-
-                    const height =
-                      (table.render.heightPercent / 100) * totalHeight;
 
                     return (
                       <div
@@ -168,10 +228,10 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${left}%`,
-                          top: `${top}%`,
-                          width: `${width}%`,
-                          height: `${height}%`,
+                          left: `${table.render.leftPercent + offsetX}%`,
+                          top: `${table.render.topPercent + offsetY}%`,
+                          width: `${table.render.widthPercent}%`,
+                          height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
@@ -184,8 +244,31 @@ export default function GuestClient() {
               </div>
             </div>
 
+            {event.hostMessage && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+                {event.hostMessage}
+              </div>
+            )}
+
+            {event.menu && event.menu.length > 0 && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                  {event.menuTitle ?? "Menu"}
+                </h3>
+                <ul className="space-y-3 text-neutral-300">
+                  {event.menu.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
           </div>
         )}
+
+        <div className="text-neutral-600 text-sm">
+          {event.layout.tables.length} tables at this event
+        </div>
 
       </div>
     </div>
