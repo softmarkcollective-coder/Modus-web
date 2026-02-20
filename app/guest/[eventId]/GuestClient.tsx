@@ -189,21 +189,12 @@ export default function GuestClient() {
 
               <div className="w-full flex justify-center">
                 <div
-                  className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-hidden"
+                  className="relative w-full mx-auto bg-black rounded-2xl overflow-hidden"
                   style={{ aspectRatio }}
                 >
                   {event.layout.tables.map((table) => {
 
                     const isActive = table.id === guestResult.guest.table;
-                    const isVertical = table.orientation === "vertical";
-
-                    const widthPercent = isVertical
-                      ? table.render.heightPercent
-                      : table.render.widthPercent;
-
-                    const heightPercent = isVertical
-                      ? table.render.widthPercent
-                      : table.render.heightPercent;
 
                     return (
                       <div
@@ -217,8 +208,8 @@ export default function GuestClient() {
                         style={{
                           left: `${table.render.leftPercent}%`,
                           top: `${table.render.topPercent}%`,
-                          width: `${widthPercent}%`,
-                          height: `${heightPercent}%`,
+                          width: `${table.render.widthPercent}%`,
+                          height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
