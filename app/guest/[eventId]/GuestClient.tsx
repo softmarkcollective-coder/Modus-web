@@ -197,7 +197,20 @@ export default function GuestClient() {
 
                     const isActive = table.id === guestResult.guest.table;
 
-                    const halfWidth = table.render.widthPercent / 2;
+                    let width = table.render.widthPercent;
+                    let left = table.render.leftPercent;
+
+                    // --- DATA-BASED JUSTERING ---
+                    if (table.orientation === "horizontal" && table.size === 3) {
+                      width = width * 1.08; // gør centerbord en smule bredere
+                    }
+
+                    if (table.orientation === "vertical" && table.size === 1) {
+                      left = left + 2; // træk sidekolonne en smule ind
+                    }
+                    // --------------------------------
+
+                    const halfWidth = width / 2;
                     const halfHeight = table.render.heightPercent / 2;
 
                     const minLeft = EDGE_PADDING + halfWidth;
@@ -206,11 +219,7 @@ export default function GuestClient() {
                     const minTop = EDGE_PADDING + halfHeight;
                     const maxTop = 100 - EDGE_PADDING - halfHeight;
 
-                    const safeLeft = Math.min(
-                      Math.max(table.render.leftPercent, minLeft),
-                      maxLeft
-                    );
-
+                    const safeLeft = Math.min(Math.max(left, minLeft), maxLeft);
                     const safeTop = Math.min(
                       Math.max(table.render.topPercent, minTop),
                       maxTop
@@ -228,7 +237,7 @@ export default function GuestClient() {
                         style={{
                           left: `${safeLeft}%`,
                           top: `${safeTop}%`,
-                          width: `${table.render.widthPercent}%`,
+                          width: `${width}%`,
                           height: `${table.render.heightPercent}%`,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
