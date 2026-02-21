@@ -50,7 +50,6 @@ type GuestResponse = GuestFoundResponse | GuestNotFoundResponse;
 export default function GuestClient() {
   const params = useParams();
   const eventId = params.eventId as string;
-
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
   const [event, setEvent] = useState<EventData | null>(null);
@@ -124,14 +123,14 @@ export default function GuestClient() {
     );
   }
 
-  // ✅ Dynamiske kolonner baseret på x
+  // 🔹 Dynamiske kolonner (bevarer U-shape logik)
   const columnKeys = Array.from(
     new Set(event.layout.tables.map((t) => t.x))
   ).sort((a, b) => a - b);
 
-  const columns = columnKeys.map((key) =>
+  const columns = columnKeys.map((xVal) =>
     event.layout.tables
-      .filter((t) => t.x === key)
+      .filter((t) => t.x === xVal)
       .sort((a, b) => a.y - b.y)
   );
 
@@ -211,7 +210,6 @@ export default function GuestClient() {
                     {column.map((table) => {
 
                       const isActive = table.id === guestResult.guest.table;
-
                       const baseUnit = 42;
 
                       const width =
