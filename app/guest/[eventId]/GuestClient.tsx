@@ -125,6 +125,10 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
+  const SAFE = 6; // indre margin i procent (matcher appens visuelle luft)
+
+  const scalePosition = (value: number) =>
+    SAFE + (value * (100 - SAFE * 2)) / 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -209,10 +213,11 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.render.leftPercent}%`,
-                          top: `${table.render.topPercent}%`,
+                          left: `${scalePosition(table.render.leftPercent)}%`,
+                          top: `${scalePosition(table.render.topPercent)}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
+                          transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
                       >
