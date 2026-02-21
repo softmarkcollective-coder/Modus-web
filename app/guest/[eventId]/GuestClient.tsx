@@ -213,7 +213,6 @@ export default function GuestClient() {
                           top: `${table.render.topPercent}%`,
                           width: `${table.render.widthPercent}%`,
                           height: `${table.render.heightPercent}%`,
-                          transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
                       >
