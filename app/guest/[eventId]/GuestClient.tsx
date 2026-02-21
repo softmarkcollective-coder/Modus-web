@@ -126,6 +126,19 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
+  // 🔥 NYT: Gruppér borde i kolonner (U-shape logik)
+  const leftTables = event.layout.tables
+    .filter((t) => t.x === 0)
+    .sort((a, b) => a.y - b.y);
+
+  const centerTables = event.layout.tables
+    .filter((t) => t.x === 1)
+    .sort((a, b) => a.y - b.y);
+
+  const rightTables = event.layout.tables
+    .filter((t) => t.x === 2)
+    .sort((a, b) => a.y - b.y);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
@@ -187,41 +200,34 @@ export default function GuestClient() {
 
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
               <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
-                Seating Plan
+                U-Shape Layout
               </p>
 
-              <div className="w-full flex justify-center">
-                <div
-                  className="relative w-full bg-black rounded-2xl overflow-visible"
-                  style={{ aspectRatio }}
-                >
-                  {event.layout.tables.map((table) => {
+              <div className="grid grid-cols-3 gap-6 text-center">
 
-                    const isActive = table.id === guestResult.guest.table;
+                {[leftTables, centerTables, rightTables].map((column, colIndex) => (
+                  <div key={colIndex} className="flex flex-col gap-4 items-center">
+                    {column.map((table) => {
 
-                    return (
-                      <div
-                        key={table.id}
-                        className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
-                          ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
-                          ${isActive
-                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
-                            : "bg-neutral-700 text-neutral-300"
-                          }`}
-                        style={{
-                          left: `${table.render.leftPercent}%`,
-                          top: `${table.render.topPercent}%`,
-                          width: `${table.render.widthPercent}%`,
-                          height: `${table.render.heightPercent}%`,
-                          transform: "translate(-50%, -50%)",
-                          zIndex: isActive ? 10 : 1
-                        }}
-                      >
-                        {table.id}
-                      </div>
-                    );
-                  })}
-                </div>
+                      const isActive = table.id === guestResult.guest.table;
+
+                      return (
+                        <div
+                          key={table.id}
+                          className={`flex items-center justify-center text-sm font-semibold transition-all
+                            ${table.shape === "round" ? "rounded-full w-16 h-16" : "rounded-xl w-20 h-12"}
+                            ${isActive
+                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_20px_rgba(214,178,94,0.7)]"
+                              : "bg-neutral-700 text-neutral-300"
+                            }`}
+                        >
+                          {table.id}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+
               </div>
             </div>
 
