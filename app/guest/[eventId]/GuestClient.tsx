@@ -200,7 +200,6 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              {/* 🔥 Justeret spacing her */}
               <div className="grid grid-cols-3 gap-3 text-center">
 
                 {[leftTables, centerTables, rightTables].map((column, colIndex) => (
@@ -209,18 +208,19 @@ export default function GuestClient() {
 
                       const isActive = table.id === guestResult.guest.table;
 
-                      const baseUnit = 40;
+                      // 🔥 Pixel-match justeret her
+                      const baseUnit = 42;
 
                       const width =
                         table.shape === "round"
-                          ? baseUnit + 20
+                          ? 52
                           : table.orientation === "horizontal"
                           ? baseUnit * (table.size ?? 1)
                           : baseUnit;
 
                       const height =
                         table.shape === "round"
-                          ? baseUnit + 20
+                          ? 52
                           : table.orientation === "horizontal"
                           ? baseUnit
                           : baseUnit * (table.size ?? 1);
