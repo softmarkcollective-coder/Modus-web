@@ -51,6 +51,8 @@ export default function GuestClient() {
   const params = useParams();
   const eventId = params.eventId as string;
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -64,9 +66,10 @@ export default function GuestClient() {
 
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/guest/event/${eventId}`, {
-          cache: "no-store"
-        });
+        const res = await fetch(
+          `${API_BASE}/api/public/event/${eventId}`,
+          { cache: "no-store" }
+        );
 
         if (res.status === 404) {
           setNotFound(true);
@@ -81,7 +84,7 @@ export default function GuestClient() {
     }
 
     fetchEvent();
-  }, [eventId]);
+  }, [eventId, API_BASE]);
 
   async function handleGuestLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -92,7 +95,7 @@ export default function GuestClient() {
 
     try {
       const res = await fetch(
-        `/api/guest/event/${eventId}/guest?name=${encodeURIComponent(
+        `${API_BASE}/api/guest?eventId=${eventId}&name=${encodeURIComponent(
           guestName.trim()
         )}`,
         { cache: "no-store" }
