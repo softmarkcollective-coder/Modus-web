@@ -193,7 +193,7 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              <div className="relative w-full bg-black rounded-2xl" style={{ aspectRatio }}>
+              <div className="relative w-full bg-black rounded-2xl overflow-hidden" style={{ aspectRatio }}>
 
                 {columns.map((col) =>
                   event.layout.tables
@@ -202,6 +202,19 @@ export default function GuestClient() {
                     .map((table) => {
 
                       const isActive = table.id === guestResult.guest.table;
+
+                      const halfWidth = table.render.widthPercent / 2;
+                      const halfHeight = table.render.heightPercent / 2;
+
+                      const clampedLeft = Math.min(
+                        Math.max(table.render.leftPercent, halfWidth),
+                        100 - halfWidth
+                      );
+
+                      const clampedTop = Math.min(
+                        Math.max(table.render.topPercent, halfHeight),
+                        100 - halfHeight
+                      );
 
                       return (
                         <div
@@ -213,8 +226,8 @@ export default function GuestClient() {
                               : "bg-neutral-700 text-neutral-300"
                             }`}
                           style={{
-                            left: `${table.render.leftPercent}%`,
-                            top: `${table.render.topPercent}%`,
+                            left: `${clampedLeft}%`,
+                            top: `${clampedTop}%`,
                             width: `${table.render.widthPercent}%`,
                             height: `${table.render.heightPercent}%`,
                             transform: "translate(-50%, -50%)",
