@@ -35,7 +35,10 @@ export default function LayoutRenderer({
   activeTableId,
 }: Props) {
 
-  switch (type) {
+  // 🔒 Normaliser type fra backend
+  const layoutType = (type ?? "custom").toLowerCase().trim();
+
+  switch (layoutType) {
 
     case "u-shape":
       return (
