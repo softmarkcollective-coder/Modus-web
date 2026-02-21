@@ -1,12 +1,12 @@
 "use client";
 
-import UShapeLayout from "./layouts/UShapeLayout";
-import WideUShapeLayout from "./layouts/WideUShapeLayout";
-import LongTablesLayout from "./layouts/LongTablesLayout";
-import TheaterLayout from "./layouts/TheaterLayout";
-import Banquet3Layout from "./layouts/Banquet3Layout";
-import Banquet5Layout from "./layouts/Banquet5Layout";
-import CustomLayout from "./layouts/CustomLayout";
+import UShapeLayout from "./UShapeLayout";
+import WideUShapeLayout from "./WideUShapeLayout";
+import LongTablesLayout from "./LongTablesLayout";
+import TheaterLayout from "./TheaterLayout";
+import Banquet3Layout from "./Banquet3Layout";
+import Banquet5Layout from "./Banquet5Layout";
+import CustomLayout from "./CustomLayout";
 
 interface Table {
   id: number;
