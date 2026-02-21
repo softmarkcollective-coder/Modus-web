@@ -18,6 +18,8 @@ interface Table {
   };
 }
 
+type LayoutType = "U_SHAPE" | "GRID" | "BANQUET" | "CUSTOM";
+
 interface EventData {
   id: string;
   name: string;
@@ -26,6 +28,7 @@ interface EventData {
   menu?: string[] | null;
   menuTitle?: string | null;
   layout: {
+    type: LayoutType;
     tables: Table[];
     metadata?: {
       aspectRatio?: number;
@@ -123,14 +126,16 @@ export default function GuestClient() {
     );
   }
 
-  // 🔹 Dynamiske kolonner (bevarer U-shape logik)
+  const layoutType = event.layout.type;
+
+  // Dynamiske kolonner (bruges til U_SHAPE og GRID)
   const columnKeys = Array.from(
     new Set(event.layout.tables.map((t) => t.x))
   ).sort((a, b) => a - b);
 
-  const columns = columnKeys.map((xVal) =>
+  const columns = columnKeys.map((key) =>
     event.layout.tables
-      .filter((t) => t.x === xVal)
+      .filter((t) => t.x === key)
       .sort((a, b) => a.y - b.y)
   );
 
@@ -198,53 +203,54 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              <div
-                className="grid gap-4 text-center"
-                style={{
-                  gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr))`
-                }}
-              >
+              {(layoutType === "U_SHAPE" || layoutType === "GRID") && (
+                <div
+                  className="grid gap-4 text-center"
+                  style={{
+                    gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr))`
+                  }}
+                >
+                  {columns.map((column, colIndex) => (
+                    <div key={colIndex} className="flex flex-col gap-3 items-center px-1">
+                      {column.map((table) => {
+                        const isActive = table.id === guestResult.guest.table;
 
-                {columns.map((column, colIndex) => (
-                  <div key={colIndex} className="flex flex-col gap-3 items-center px-1">
-                    {column.map((table) => {
+                        const baseUnit = 42;
 
-                      const isActive = table.id === guestResult.guest.table;
-                      const baseUnit = 42;
+                        const width =
+                          table.shape === "round"
+                            ? 52
+                            : table.orientation === "horizontal"
+                            ? baseUnit * (table.size ?? 1)
+                            : baseUnit;
 
-                      const width =
-                        table.shape === "round"
-                          ? 52
-                          : table.orientation === "horizontal"
-                          ? baseUnit * (table.size ?? 1)
-                          : baseUnit;
+                        const height =
+                          table.shape === "round"
+                            ? 52
+                            : table.orientation === "horizontal"
+                            ? baseUnit
+                            : baseUnit * (table.size ?? 1);
 
-                      const height =
-                        table.shape === "round"
-                          ? 52
-                          : table.orientation === "horizontal"
-                          ? baseUnit
-                          : baseUnit * (table.size ?? 1);
+                        return (
+                          <div
+                            key={table.id}
+                            className={`flex items-center justify-center text-sm font-semibold transition-all
+                              ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
+                              ${isActive
+                                ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_28px_rgba(214,178,94,0.6)]"
+                                : "bg-neutral-700 text-neutral-300"
+                              }`}
+                            style={{ width, height }}
+                          >
+                            {table.id}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-                      return (
-                        <div
-                          key={table.id}
-                          className={`flex items-center justify-center text-sm font-semibold transition-all
-                            ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
-                            ${isActive
-                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_28px_rgba(214,178,94,0.6)]"
-                              : "bg-neutral-700 text-neutral-300"
-                            }`}
-                          style={{ width, height }}
-                        >
-                          {table.id}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-
-              </div>
             </div>
 
             {event.hostMessage && (
