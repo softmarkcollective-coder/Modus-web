@@ -126,25 +126,38 @@ export default function GuestClient() {
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
   const FRAME_PADDING = 4;
 
-  // 🔥 GLOBAL SCALE CALCULATION
+  // 🔥 GLOBAL SCALE (robust)
   const scaleData = useMemo(() => {
     const tables = event.layout.tables;
+    if (!tables.length) {
+      return { minX: 0, minY: 0, scale: 1 };
+    }
 
-    const minX = Math.min(...tables.map(t => t.render.leftPercent - t.render.widthPercent / 2));
-    const maxX = Math.max(...tables.map(t => t.render.leftPercent + t.render.widthPercent / 2));
-    const minY = Math.min(...tables.map(t => t.render.topPercent - t.render.heightPercent / 2));
-    const maxY = Math.max(...tables.map(t => t.render.topPercent + t.render.heightPercent / 2));
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    tables.forEach((t) => {
+      const left = t.render.leftPercent - t.render.widthPercent / 2;
+      const right = t.render.leftPercent + t.render.widthPercent / 2;
+      const top = t.render.topPercent - t.render.heightPercent / 2;
+      const bottom = t.render.topPercent + t.render.heightPercent / 2;
+
+      minX = Math.min(minX, left);
+      maxX = Math.max(maxX, right);
+      minY = Math.min(minY, top);
+      maxY = Math.max(maxY, bottom);
+    });
 
     const layoutWidth = maxX - minX;
     const layoutHeight = maxY - minY;
-
     const available = 100 - FRAME_PADDING * 2;
 
-    const scale = Math.min(
-      available / layoutWidth,
-      available / layoutHeight,
-      1
-    );
+    const scale =
+      layoutWidth > 0 && layoutHeight > 0
+        ? Math.min(available / layoutWidth, available / layoutHeight, 1)
+        : 1;
 
     return { minX, minY, scale };
   }, [event.layout.tables]);
@@ -229,11 +242,13 @@ export default function GuestClient() {
 
                       const scaledLeft =
                         FRAME_PADDING +
-                        (table.render.leftPercent - scaleData.minX) * scaleData.scale;
+                        (table.render.leftPercent - scaleData.minX) *
+                          scaleData.scale;
 
                       const scaledTop =
                         FRAME_PADDING +
-                        (table.render.topPercent - scaleData.minY) * scaleData.scale;
+                        (table.render.topPercent - scaleData.minY) *
+                          scaleData.scale;
 
                       return (
                         <div
