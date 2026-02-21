@@ -128,21 +128,17 @@ export default function GuestClient() {
 
   const tables = event.layout.tables;
 
+  // ✅ Bounding box beregnes ud fra CENTER positions
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
   let maxY = -Infinity;
 
   tables.forEach((t) => {
-    const left = t.render.leftPercent - t.render.widthPercent / 2;
-    const right = t.render.leftPercent + t.render.widthPercent / 2;
-    const top = t.render.topPercent - t.render.heightPercent / 2;
-    const bottom = t.render.topPercent + t.render.heightPercent / 2;
-
-    minX = Math.min(minX, left);
-    maxX = Math.max(maxX, right);
-    minY = Math.min(minY, top);
-    maxY = Math.max(maxY, bottom);
+    minX = Math.min(minX, t.render.leftPercent);
+    maxX = Math.max(maxX, t.render.leftPercent);
+    minY = Math.min(minY, t.render.topPercent);
+    maxY = Math.max(maxY, t.render.topPercent);
   });
 
   const layoutWidth = maxX - minX;
@@ -232,12 +228,13 @@ export default function GuestClient() {
 
                       const isActive = table.id === guestResult.guest.table;
 
-                      // ✅ CENTER-BASED SCALE (zoom out effect)
                       const scaledLeft =
-                        50 + (table.render.leftPercent - 50) * scale;
+                        FRAME_PADDING +
+                        (table.render.leftPercent - minX) * scale;
 
                       const scaledTop =
-                        50 + (table.render.topPercent - 50) * scale;
+                        FRAME_PADDING +
+                        (table.render.topPercent - minY) * scale;
 
                       return (
                         <div
