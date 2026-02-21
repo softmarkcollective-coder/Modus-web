@@ -123,95 +123,154 @@ export default function GuestClient() {
     );
   }
 
-  const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
-  const FRAME_PADDING = 4;
-
-  const tables = event.layout.tables;
-
-  // 🔥 Dynamiske kolonner
-  const columns = Array.from(
-    new Set(tables.map((t) => t.x))
+  // ✅ Dynamiske kolonner
+  const columnKeys = Array.from(
+    new Set(event.layout.tables.map((t) => t.x))
   ).sort((a, b) => a - b);
+
+  const columns = columnKeys.map((key) =>
+    event.layout.tables
+      .filter((t) => t.x === key)
+      .sort((a, b) => a.y - b.y)
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-xl mx-auto text-center space-y-8">
 
-        {/* ... header + form unchanged ... */}
+        {event.image && event.image.startsWith("http") && (
+          <div className="relative">
+            <img
+              src={event.image}
+              alt={event.name}
+              className="w-full h-52 object-cover rounded-3xl shadow-2xl"
+            />
+            <div className="absolute inset-0 bg-black/40 rounded-3xl" />
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.4em] text-neutral-500">
+            {event.name}
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-semibold">
+            Find your seat
+          </h1>
+        </div>
+
+        <form onSubmit={handleGuestLookup} className="space-y-5">
+          <input
+            type="text"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            placeholder="Enter your name"
+            className="w-full px-6 py-4 rounded-2xl bg-neutral-900 border border-neutral-800
+                       focus:outline-none focus:ring-2 focus:ring-[#d6b25e]
+                       text-white text-lg text-center"
+          />
+
+          <button
+            type="submit"
+            disabled={guestLoading || !guestName.trim()}
+            className="w-full py-4 rounded-2xl font-semibold text-lg text-black
+                       bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f]
+                       shadow-[0_10px_30px_rgba(214,178,94,0.35)]
+                       hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            {guestLoading ? "..." : "Show my table"}
+          </button>
+        </form>
 
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
+            <div className="p-8 bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 rounded-3xl">
+              <p className="text-neutral-400 uppercase tracking-[0.3em] text-xs mb-3">
+                You are seated at
+              </p>
+              <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
+                Table {guestResult.guest.table}
+              </div>
+            </div>
+
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-              <p className="text-xs text-neutral-500 mb-4 uppercase tracking-widest">
+              <p className="text-xs text-neutral-500 mb-4 uppercase tracking-[0.25em]">
                 Seating Layout
               </p>
 
+              {/* ✅ Dynamisk grid-kolonner */}
               <div
-                className="relative w-full bg-black rounded-2xl overflow-hidden"
-                style={{ aspectRatio }}
+                className="grid gap-4 text-center"
+                style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr))` }}
               >
 
-                {columns.map((col) => {
-                  const columnTables = tables
-                    .filter((t) => t.x === col)
-                    .sort((a, b) => a.render.topPercent - b.render.topPercent);
+                {columns.map((column, colIndex) => (
+                  <div key={colIndex} className="flex flex-col gap-3 items-center px-1">
+                    {column.map((table) => {
 
-                  let lastBottom = -Infinity;
+                      const isActive = table.id === guestResult.guest.table;
+                      const baseUnit = 42;
 
-                  return columnTables.map((table) => {
+                      const width =
+                        table.shape === "round"
+                          ? 52
+                          : table.orientation === "horizontal"
+                          ? baseUnit * (table.size ?? 1)
+                          : baseUnit;
 
-                    const isActive =
-                      table.id === guestResult.guest.table;
+                      const height =
+                        table.shape === "round"
+                          ? 52
+                          : table.orientation === "horizontal"
+                          ? baseUnit
+                          : baseUnit * (table.size ?? 1);
 
-                    const halfHeight =
-                      table.render.heightPercent / 2;
-
-                    let adjustedTop =
-                      table.render.topPercent;
-
-                    const topEdge =
-                      adjustedTop - halfHeight;
-
-                    if (topEdge < lastBottom) {
-                      adjustedTop =
-                        lastBottom + halfHeight;
-                    }
-
-                    lastBottom =
-                      adjustedTop + halfHeight;
-
-                    return (
-                      <div
-                        key={table.id}
-                        className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
-                          ${table.shape === "round"
-                            ? "rounded-full"
-                            : "rounded-xl"}
-                          ${isActive
-                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
-                            : "bg-neutral-700 text-neutral-300"}
-                        `}
-                        style={{
-                          left: `${table.render.leftPercent}%`,
-                          top: `${adjustedTop}%`,
-                          width: `${table.render.widthPercent}%`,
-                          height: `${table.render.heightPercent}%`,
-                          transform: "translate(-50%, -50%)",
-                          zIndex: isActive ? 10 : 1,
-                        }}
-                      >
-                        {table.id}
-                      </div>
-                    );
-                  });
-                })}
+                      return (
+                        <div
+                          key={table.id}
+                          className={`flex items-center justify-center text-sm font-semibold transition-all
+                            ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
+                            ${isActive
+                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_28px_rgba(214,178,94,0.6)]"
+                              : "bg-neutral-700 text-neutral-300"
+                            }`}
+                          style={{ width, height }}
+                        >
+                          {table.id}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
 
               </div>
             </div>
 
+            {event.hostMessage && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-300 text-sm">
+                {event.hostMessage}
+              </div>
+            )}
+
+            {event.menu && event.menu.length > 0 && (
+              <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
+                <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
+                  {event.menuTitle ?? "Menu"}
+                </h3>
+                <ul className="space-y-3 text-neutral-300">
+                  {event.menu.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
           </div>
         )}
+
+        <div className="text-neutral-600 text-sm">
+          {event.layout.tables.length} tables at this event
+        </div>
 
       </div>
     </div>
