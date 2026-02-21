@@ -196,19 +196,18 @@ export default function GuestClient() {
             </div>
 
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-              <p className="text-xs text-neutral-500 mb-4 uppercase tracking-widest">
+              <p className="text-xs text-neutral-500 mb-4 uppercase tracking-[0.25em]">
                 Seating Layout
               </p>
 
-              <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="grid grid-cols-3 gap-4 text-center">
 
                 {[leftTables, centerTables, rightTables].map((column, colIndex) => (
-                  <div key={colIndex} className="flex flex-col gap-2 items-center">
+                  <div key={colIndex} className="flex flex-col gap-3 items-center px-1">
                     {column.map((table) => {
 
                       const isActive = table.id === guestResult.guest.table;
 
-                      // 🔥 Pixel-match justeret her
                       const baseUnit = 42;
 
                       const width =
@@ -231,7 +230,7 @@ export default function GuestClient() {
                           className={`flex items-center justify-center text-sm font-semibold transition-all
                             ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                             ${isActive
-                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_20px_rgba(214,178,94,0.7)]"
+                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_28px_rgba(214,178,94,0.6)]"
                               : "bg-neutral-700 text-neutral-300"
                             }`}
                           style={{ width, height }}
