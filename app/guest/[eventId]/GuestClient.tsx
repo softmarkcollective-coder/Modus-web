@@ -124,6 +124,18 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
+  const SAFE = 6;
+
+  const scalePosition = (value: number) =>
+    SAFE + (value * (100 - SAFE * 2)) / 100;
+
+  const scaleSize = (value: number) =>
+    (value * (100 - SAFE * 2)) / 100;
+
+  // 🔥 Gruppér efter x (kolonner)
+  const columns = Array.from(
+    new Set(event.layout.tables.map((t) => t.x))
+  ).sort((a, b) => a - b);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -189,37 +201,40 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              <div className="w-full flex justify-center">
-                <div
-                  className="relative w-full bg-black rounded-2xl"
-                  style={{ aspectRatio }}
-                >
-                  {event.layout.tables.map((table) => {
+              <div className="relative w-full bg-black rounded-2xl" style={{ aspectRatio }}>
 
-                    const isActive = table.id === guestResult.guest.table;
+                {columns.map((col) =>
+                  event.layout.tables
+                    .filter((t) => t.x === col)
+                    .sort((a, b) => a.y - b.y)
+                    .map((table) => {
 
-                    return (
-                      <div
-                        key={table.id}
-                        className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
-                          ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
-                          ${isActive
-                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
-                            : "bg-neutral-700 text-neutral-300"
-                          }`}
-                        style={{
-                          left: `${table.render.leftPercent}%`,
-                          top: `${table.render.topPercent}%`,
-                          width: `${table.render.widthPercent}%`,
-                          height: `${table.render.heightPercent}%`,
-                          zIndex: isActive ? 10 : 1
-                        }}
-                      >
-                        {table.id}
-                      </div>
-                    );
-                  })}
-                </div>
+                      const isActive = table.id === guestResult.guest.table;
+
+                      return (
+                        <div
+                          key={table.id}
+                          className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
+                            ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
+                            ${isActive
+                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
+                              : "bg-neutral-700 text-neutral-300"
+                            }`}
+                          style={{
+                            left: `${scalePosition(table.render.leftPercent)}%`,
+                            top: `${scalePosition(table.render.topPercent)}%`,
+                            width: `${scaleSize(table.render.widthPercent)}%`,
+                            height: `${scaleSize(table.render.heightPercent)}%`,
+                            transform: "translate(-50%, -50%)",
+                            zIndex: isActive ? 10 : 1
+                          }}
+                        >
+                          {table.id}
+                        </div>
+                      );
+                    })
+                )}
+
               </div>
             </div>
 
