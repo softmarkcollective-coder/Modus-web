@@ -124,7 +124,8 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
-  const FRAME_PADDING = 4; // 🔥 luft inde i rammen (kan justeres)
+  const FRAME_PADDING = 4;
+  const MIN_GAP = 2; // 🔥 minimal afstand mellem borde
 
   const columns = Array.from(
     new Set(event.layout.tables.map((t) => t.x))
@@ -196,56 +197,77 @@ export default function GuestClient() {
 
               <div className="relative w-full bg-black rounded-2xl overflow-hidden" style={{ aspectRatio }}>
 
-                {columns.map((col) =>
-                  event.layout.tables
-                    .filter((t) => t.x === col)
-                    .sort((a, b) => a.y - b.y)
-                    .map((table) => {
+                {(() => {
+                  const placed: any[] = [];
 
-                      const isActive = table.id === guestResult.guest.table;
+                  return columns.map((col) =>
+                    event.layout.tables
+                      .filter((t) => t.x === col)
+                      .sort((a, b) => a.y - b.y)
+                      .map((table) => {
 
-                      const halfWidth = table.render.widthPercent / 2;
-                      const halfHeight = table.render.heightPercent / 2;
+                        const isActive = table.id === guestResult.guest.table;
 
-                      const minLeft = FRAME_PADDING + halfWidth;
-                      const maxLeft = 100 - FRAME_PADDING - halfWidth;
+                        const halfWidth = table.render.widthPercent / 2;
+                        const halfHeight = table.render.heightPercent / 2;
 
-                      const minTop = FRAME_PADDING + halfHeight;
-                      const maxTop = 100 - FRAME_PADDING - halfHeight;
+                        const minLeft = FRAME_PADDING + halfWidth;
+                        const maxLeft = 100 - FRAME_PADDING - halfWidth;
 
-                      const clampedLeft = Math.min(
-                        Math.max(table.render.leftPercent, minLeft),
-                        maxLeft
-                      );
+                        const minTop = FRAME_PADDING + halfHeight;
+                        const maxTop = 100 - FRAME_PADDING - halfHeight;
 
-                      const clampedTop = Math.min(
-                        Math.max(table.render.topPercent, minTop),
-                        maxTop
-                      );
+                        let left = Math.min(
+                          Math.max(table.render.leftPercent, minLeft),
+                          maxLeft
+                        );
 
-                      return (
-                        <div
-                          key={table.id}
-                          className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
-                            ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
-                            ${isActive
-                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
-                              : "bg-neutral-700 text-neutral-300"
-                            }`}
-                          style={{
-                            left: `${clampedLeft}%`,
-                            top: `${clampedTop}%`,
-                            width: `${table.render.widthPercent}%`,
-                            height: `${table.render.heightPercent}%`,
-                            transform: "translate(-50%, -50%)",
-                            zIndex: isActive ? 10 : 1
-                          }}
-                        >
-                          {table.id}
-                        </div>
-                      );
-                    })
-                )}
+                        let top = Math.min(
+                          Math.max(table.render.topPercent, minTop),
+                          maxTop
+                        );
+
+                        // 🔥 overlap check
+                        for (const other of placed) {
+                          const overlapX =
+                            Math.abs(left - other.left) <
+                            (halfWidth + other.halfWidth + MIN_GAP);
+
+                          const overlapY =
+                            Math.abs(top - other.top) <
+                            (halfHeight + other.halfHeight + MIN_GAP);
+
+                          if (overlapX && overlapY) {
+                            top = other.top + other.halfHeight + halfHeight + MIN_GAP;
+                          }
+                        }
+
+                        placed.push({ left, top, halfWidth, halfHeight });
+
+                        return (
+                          <div
+                            key={table.id}
+                            className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
+                              ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
+                              ${isActive
+                                ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
+                                : "bg-neutral-700 text-neutral-300"
+                              }`}
+                            style={{
+                              left: `${left}%`,
+                              top: `${top}%`,
+                              width: `${table.render.widthPercent}%`,
+                              height: `${table.render.heightPercent}%`,
+                              transform: "translate(-50%, -50%)",
+                              zIndex: isActive ? 10 : 1
+                            }}
+                          >
+                            {table.id}
+                          </div>
+                        );
+                      })
+                  );
+                })()}
 
               </div>
             </div>
