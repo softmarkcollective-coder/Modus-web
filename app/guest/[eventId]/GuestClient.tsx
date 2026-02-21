@@ -124,17 +124,14 @@ export default function GuestClient() {
     );
   }
 
-  const leftTables = event.layout.tables
-    .filter((t) => t.x === 0)
-    .sort((a, b) => a.y - b.y);
-
-  const centerTables = event.layout.tables
-    .filter((t) => t.x === 1)
-    .sort((a, b) => a.y - b.y);
-
-  const rightTables = event.layout.tables
-    .filter((t) => t.x === 2)
-    .sort((a, b) => a.y - b.y);
+  // 🔥 Dynamisk gruppering baseret på alle unikke x-værdier
+  const groupedColumns = Object.values(
+    event.layout.tables.reduce((acc, table) => {
+      if (!acc[table.x]) acc[table.x] = [];
+      acc[table.x].push(table);
+      return acc;
+    }, {} as Record<number, Table[]>)
+  ).map((column) => column.sort((a, b) => a.y - b.y));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -196,18 +193,20 @@ export default function GuestClient() {
             </div>
 
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-              <p className="text-xs text-neutral-500 mb-4 uppercase tracking-[0.25em]">
+              <p className="text-xs text-neutral-500 mb-4 uppercase tracking-widest">
                 Seating Layout
               </p>
 
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div
+                className="grid gap-3 text-center"
+                style={{ gridTemplateColumns: `repeat(${groupedColumns.length}, minmax(0, 1fr))` }}
+              >
 
-                {[leftTables, centerTables, rightTables].map((column, colIndex) => (
-                  <div key={colIndex} className="flex flex-col gap-3 items-center px-1">
+                {groupedColumns.map((column, colIndex) => (
+                  <div key={colIndex} className="flex flex-col gap-2 items-center">
                     {column.map((table) => {
 
                       const isActive = table.id === guestResult.guest.table;
-
                       const baseUnit = 42;
 
                       const width =
@@ -230,7 +229,7 @@ export default function GuestClient() {
                           className={`flex items-center justify-center text-sm font-semibold transition-all
                             ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                             ${isActive
-                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_28px_rgba(214,178,94,0.6)]"
+                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_20px_rgba(214,178,94,0.7)]"
                               : "bg-neutral-700 text-neutral-300"
                             }`}
                           style={{ width, height }}
