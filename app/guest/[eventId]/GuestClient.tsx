@@ -124,14 +124,7 @@ export default function GuestClient() {
     );
   }
 
-  // 🔥 Dynamisk gruppering baseret på alle unikke x-værdier
-  const groupedColumns = Object.values(
-    event.layout.tables.reduce((acc, table) => {
-      if (!acc[table.x]) acc[table.x] = [];
-      acc[table.x].push(table);
-      return acc;
-    }, {} as Record<number, Table[]>)
-  ).map((column) => column.sort((a, b) => a.y - b.y));
+  const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -197,50 +190,38 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              <div
-                className="grid gap-3 text-center"
-                style={{ gridTemplateColumns: `repeat(${groupedColumns.length}, minmax(0, 1fr))` }}
-              >
+              <div className="w-full flex justify-center">
+                <div
+                  className="relative w-full bg-black rounded-2xl overflow-visible"
+                  style={{ aspectRatio }}
+                >
+                  {event.layout.tables.map((table) => {
 
-                {groupedColumns.map((column, colIndex) => (
-                  <div key={colIndex} className="flex flex-col gap-2 items-center">
-                    {column.map((table) => {
+                    const isActive = table.id === guestResult.guest.table;
 
-                      const isActive = table.id === guestResult.guest.table;
-                      const baseUnit = 42;
-
-                      const width =
-                        table.shape === "round"
-                          ? 52
-                          : table.orientation === "horizontal"
-                          ? baseUnit * (table.size ?? 1)
-                          : baseUnit;
-
-                      const height =
-                        table.shape === "round"
-                          ? 52
-                          : table.orientation === "horizontal"
-                          ? baseUnit
-                          : baseUnit * (table.size ?? 1);
-
-                      return (
-                        <div
-                          key={table.id}
-                          className={`flex items-center justify-center text-sm font-semibold transition-all
-                            ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
-                            ${isActive
-                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_20px_rgba(214,178,94,0.7)]"
-                              : "bg-neutral-700 text-neutral-300"
-                            }`}
-                          style={{ width, height }}
-                        >
-                          {table.id}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-
+                    return (
+                      <div
+                        key={table.id}
+                        className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
+                          ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
+                          ${isActive
+                            ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
+                            : "bg-neutral-700 text-neutral-300"
+                          }`}
+                        style={{
+                          left: `${table.render.leftPercent}%`,
+                          top: `${table.render.topPercent}%`,
+                          width: `${table.render.widthPercent}%`,
+                          height: `${table.render.heightPercent}%`,
+                          transform: "translate(-50%, -50%)",
+                          zIndex: isActive ? 10 : 1
+                        }}
+                      >
+                        {table.id}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
