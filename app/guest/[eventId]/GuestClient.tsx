@@ -124,9 +124,6 @@ export default function GuestClient() {
     );
   }
 
-  const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
-
-  // 🔥 NYT: Gruppér borde i kolonner (U-shape logik)
   const leftTables = event.layout.tables
     .filter((t) => t.x === 0)
     .sort((a, b) => a.y - b.y);
@@ -211,15 +208,35 @@ export default function GuestClient() {
 
                       const isActive = table.id === guestResult.guest.table;
 
+                      // 🔥 Dynamisk størrelse baseret på size + orientation
+                      const baseUnit = 40;
+                      const width =
+                        table.shape === "round"
+                          ? baseUnit + 20
+                          : table.orientation === "horizontal"
+                          ? baseUnit * (table.size ?? 1)
+                          : baseUnit;
+
+                      const height =
+                        table.shape === "round"
+                          ? baseUnit + 20
+                          : table.orientation === "horizontal"
+                          ? baseUnit
+                          : baseUnit * (table.size ?? 1);
+
                       return (
                         <div
                           key={table.id}
                           className={`flex items-center justify-center text-sm font-semibold transition-all
-                            ${table.shape === "round" ? "rounded-full w-16 h-16" : "rounded-xl w-20 h-12"}
+                            ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
                             ${isActive
                               ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_20px_rgba(214,178,94,0.7)]"
                               : "bg-neutral-700 text-neutral-300"
                             }`}
+                          style={{
+                            width,
+                            height
+                          }}
                         >
                           {table.id}
                         </div>
