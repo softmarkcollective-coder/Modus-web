@@ -220,7 +220,6 @@ export default function GuestClient() {
                           top: `${scalePosition(table.render.topPercent)}%`,
                           width: `${scaleSize(table.render.widthPercent)}%`,
                           height: `${scaleSize(table.render.heightPercent)}%`,
-                          transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
                       >
