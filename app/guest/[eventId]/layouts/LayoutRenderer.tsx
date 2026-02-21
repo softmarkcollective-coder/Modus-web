@@ -27,12 +27,16 @@ interface Props {
   type?: string | null;
   tables: Table[];
   activeTableId: number | null;
+  metadata?: {
+    aspectRatio?: number;
+  };
 }
 
 export default function LayoutRenderer({
   type,
   tables,
   activeTableId,
+  metadata,
 }: Props) {
 
   // 🔒 Normaliser type fra backend
@@ -53,6 +57,7 @@ export default function LayoutRenderer({
         <WideUShapeLayout
           tables={tables}
           activeTableId={activeTableId}
+          aspectRatio={metadata?.aspectRatio}
         />
       );
 

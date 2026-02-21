@@ -194,6 +194,7 @@ export default function GuestClient() {
                 type={event.layout.type}
                 tables={event.layout.tables}
                 activeTableId={guestResult.guest.table}
+                metadata={event.layout.metadata}
               />
 
             </div>
