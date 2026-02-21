@@ -18,14 +18,21 @@ interface Table {
 interface Props {
   tables: Table[];
   activeTableId: number | null;
+  aspectRatio?: number;
 }
 
 export default function WideUShapeLayout({
   tables,
   activeTableId,
+  aspectRatio,
 }: Props) {
   return (
-    <div className="relative w-full aspect-[3/2]">
+    <div
+      className="relative w-full"
+      style={{
+        aspectRatio: aspectRatio ?? 1.5,
+      }}
+    >
       {tables.map((table) => {
         const isActive = table.id === activeTableId;
 
