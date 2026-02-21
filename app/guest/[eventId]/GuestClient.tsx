@@ -126,7 +126,6 @@ export default function GuestClient() {
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
   const FRAME_PADDING = 4;
 
-  // 🔥 GLOBAL PROPORTIONAL SCALE
   const tables = event.layout.tables;
 
   let minX = Infinity;
@@ -233,13 +232,12 @@ export default function GuestClient() {
 
                       const isActive = table.id === guestResult.guest.table;
 
+                      // ✅ CENTER-BASED SCALE (zoom out effect)
                       const scaledLeft =
-                        FRAME_PADDING +
-                        (table.render.leftPercent - minX) * scale;
+                        50 + (table.render.leftPercent - 50) * scale;
 
                       const scaledTop =
-                        FRAME_PADDING +
-                        (table.render.topPercent - minY) * scale;
+                        50 + (table.render.topPercent - 50) * scale;
 
                       return (
                         <div
