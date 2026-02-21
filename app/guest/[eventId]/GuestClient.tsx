@@ -50,6 +50,7 @@ type GuestResponse = GuestFoundResponse | GuestNotFoundResponse;
 export default function GuestClient() {
   const params = useParams();
   const eventId = params.eventId as string;
+
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
   const [event, setEvent] = useState<EventData | null>(null);
@@ -123,7 +124,7 @@ export default function GuestClient() {
     );
   }
 
-  // ✅ Dynamiske kolonner
+  // ✅ Dynamiske kolonner baseret på x
   const columnKeys = Array.from(
     new Set(event.layout.tables.map((t) => t.x))
   ).sort((a, b) => a - b);
@@ -198,10 +199,11 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              {/* ✅ Dynamisk grid-kolonner */}
               <div
                 className="grid gap-4 text-center"
-                style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr))` }}
+                style={{
+                  gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr))`
+                }}
               >
 
                 {columns.map((column, colIndex) => (
@@ -209,6 +211,7 @@ export default function GuestClient() {
                     {column.map((table) => {
 
                       const isActive = table.id === guestResult.guest.table;
+
                       const baseUnit = 42;
 
                       const width =
