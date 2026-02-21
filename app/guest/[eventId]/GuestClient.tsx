@@ -128,17 +128,20 @@ export default function GuestClient() {
 
   const tables = event.layout.tables;
 
-  // ✅ Bounding box beregnes ud fra CENTER positions
+  // 🔥 Bounding box korrekt beregnet med translate(-50%, -50%) i mente
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
   let maxY = -Infinity;
 
   tables.forEach((t) => {
-    minX = Math.min(minX, t.render.leftPercent);
-    maxX = Math.max(maxX, t.render.leftPercent);
-    minY = Math.min(minY, t.render.topPercent);
-    maxY = Math.max(maxY, t.render.topPercent);
+    const halfW = t.render.widthPercent / 2;
+    const halfH = t.render.heightPercent / 2;
+
+    minX = Math.min(minX, t.render.leftPercent - halfW);
+    maxX = Math.max(maxX, t.render.leftPercent + halfW);
+    minY = Math.min(minY, t.render.topPercent - halfH);
+    maxY = Math.max(maxY, t.render.topPercent + halfH);
   });
 
   const layoutWidth = maxX - minX;
@@ -147,7 +150,7 @@ export default function GuestClient() {
 
   const scale =
     layoutWidth > 0 && layoutHeight > 0
-      ? Math.min(available / layoutWidth, available / layoutHeight, 1)
+      ? Math.min(available / layoutWidth, available / layoutHeight)
       : 1;
 
   const columns = Array.from(
