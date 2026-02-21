@@ -196,20 +196,21 @@ export default function GuestClient() {
             </div>
 
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
-              <p className="text-xs text-neutral-500 mb-6 uppercase tracking-widest">
-                U-Shape Layout
+              <p className="text-xs text-neutral-500 mb-4 uppercase tracking-widest">
+                Seating Layout
               </p>
 
-              <div className="grid grid-cols-3 gap-6 text-center">
+              {/* 🔥 Justeret spacing her */}
+              <div className="grid grid-cols-3 gap-3 text-center">
 
                 {[leftTables, centerTables, rightTables].map((column, colIndex) => (
-                  <div key={colIndex} className="flex flex-col gap-4 items-center">
+                  <div key={colIndex} className="flex flex-col gap-2 items-center">
                     {column.map((table) => {
 
                       const isActive = table.id === guestResult.guest.table;
 
-                      // 🔥 Dynamisk størrelse baseret på size + orientation
                       const baseUnit = 40;
+
                       const width =
                         table.shape === "round"
                           ? baseUnit + 20
@@ -233,10 +234,7 @@ export default function GuestClient() {
                               ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_20px_rgba(214,178,94,0.7)]"
                               : "bg-neutral-700 text-neutral-300"
                             }`}
-                          style={{
-                            width,
-                            height
-                          }}
+                          style={{ width, height }}
                         >
                           {table.id}
                         </div>
