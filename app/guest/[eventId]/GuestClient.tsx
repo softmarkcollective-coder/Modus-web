@@ -50,7 +50,6 @@ type GuestResponse = GuestFoundResponse | GuestNotFoundResponse;
 export default function GuestClient() {
   const params = useParams();
   const eventId = params.eventId as string;
-
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
   const [event, setEvent] = useState<EventData | null>(null);
@@ -125,13 +124,6 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
-  const SAFE = 6;
-
-  const scalePosition = (value: number) =>
-    SAFE + (value * (100 - SAFE * 2)) / 100;
-
-  const scaleSize = (value: number) =>
-    (value * (100 - SAFE * 2)) / 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -199,7 +191,7 @@ export default function GuestClient() {
 
               <div className="w-full flex justify-center">
                 <div
-                  className="relative w-full bg-black rounded-2xl overflow-visible"
+                  className="relative w-full bg-black rounded-2xl"
                   style={{ aspectRatio }}
                 >
                   {event.layout.tables.map((table) => {
@@ -216,10 +208,10 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${scalePosition(table.render.leftPercent)}%`,
-                          top: `${scalePosition(table.render.topPercent)}%`,
-                          width: `${scaleSize(table.render.widthPercent)}%`,
-                          height: `${scaleSize(table.render.heightPercent)}%`,
+                          left: `${table.render.leftPercent}%`,
+                          top: `${table.render.topPercent}%`,
+                          width: `${table.render.widthPercent}%`,
+                          height: `${table.render.heightPercent}%`,
                           zIndex: isActive ? 10 : 1
                         }}
                       >
