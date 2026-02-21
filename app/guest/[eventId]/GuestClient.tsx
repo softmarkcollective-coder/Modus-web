@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 
 interface Table {
@@ -125,7 +125,29 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
   const FRAME_PADDING = 4;
-  const MIN_GAP = 2; // 🔥 minimal afstand mellem borde
+
+  // 🔥 GLOBAL SCALE CALCULATION
+  const scaleData = useMemo(() => {
+    const tables = event.layout.tables;
+
+    const minX = Math.min(...tables.map(t => t.render.leftPercent - t.render.widthPercent / 2));
+    const maxX = Math.max(...tables.map(t => t.render.leftPercent + t.render.widthPercent / 2));
+    const minY = Math.min(...tables.map(t => t.render.topPercent - t.render.heightPercent / 2));
+    const maxY = Math.max(...tables.map(t => t.render.topPercent + t.render.heightPercent / 2));
+
+    const layoutWidth = maxX - minX;
+    const layoutHeight = maxY - minY;
+
+    const available = 100 - FRAME_PADDING * 2;
+
+    const scale = Math.min(
+      available / layoutWidth,
+      available / layoutHeight,
+      1
+    );
+
+    return { minX, minY, scale };
+  }, [event.layout.tables]);
 
   const columns = Array.from(
     new Set(event.layout.tables.map((t) => t.x))
@@ -197,77 +219,45 @@ export default function GuestClient() {
 
               <div className="relative w-full bg-black rounded-2xl overflow-hidden" style={{ aspectRatio }}>
 
-                {(() => {
-                  const placed: any[] = [];
+                {columns.map((col) =>
+                  event.layout.tables
+                    .filter((t) => t.x === col)
+                    .sort((a, b) => a.y - b.y)
+                    .map((table) => {
 
-                  return columns.map((col) =>
-                    event.layout.tables
-                      .filter((t) => t.x === col)
-                      .sort((a, b) => a.y - b.y)
-                      .map((table) => {
+                      const isActive = table.id === guestResult.guest.table;
 
-                        const isActive = table.id === guestResult.guest.table;
+                      const scaledLeft =
+                        FRAME_PADDING +
+                        (table.render.leftPercent - scaleData.minX) * scaleData.scale;
 
-                        const halfWidth = table.render.widthPercent / 2;
-                        const halfHeight = table.render.heightPercent / 2;
+                      const scaledTop =
+                        FRAME_PADDING +
+                        (table.render.topPercent - scaleData.minY) * scaleData.scale;
 
-                        const minLeft = FRAME_PADDING + halfWidth;
-                        const maxLeft = 100 - FRAME_PADDING - halfWidth;
-
-                        const minTop = FRAME_PADDING + halfHeight;
-                        const maxTop = 100 - FRAME_PADDING - halfHeight;
-
-                        let left = Math.min(
-                          Math.max(table.render.leftPercent, minLeft),
-                          maxLeft
-                        );
-
-                        let top = Math.min(
-                          Math.max(table.render.topPercent, minTop),
-                          maxTop
-                        );
-
-                        // 🔥 overlap check
-                        for (const other of placed) {
-                          const overlapX =
-                            Math.abs(left - other.left) <
-                            (halfWidth + other.halfWidth + MIN_GAP);
-
-                          const overlapY =
-                            Math.abs(top - other.top) <
-                            (halfHeight + other.halfHeight + MIN_GAP);
-
-                          if (overlapX && overlapY) {
-                            top = other.top + other.halfHeight + halfHeight + MIN_GAP;
-                          }
-                        }
-
-                        placed.push({ left, top, halfWidth, halfHeight });
-
-                        return (
-                          <div
-                            key={table.id}
-                            className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
-                              ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
-                              ${isActive
-                                ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
-                                : "bg-neutral-700 text-neutral-300"
-                              }`}
-                            style={{
-                              left: `${left}%`,
-                              top: `${top}%`,
-                              width: `${table.render.widthPercent}%`,
-                              height: `${table.render.heightPercent}%`,
-                              transform: "translate(-50%, -50%)",
-                              zIndex: isActive ? 10 : 1
-                            }}
-                          >
-                            {table.id}
-                          </div>
-                        );
-                      })
-                  );
-                })()}
+                      return (
+                        <div
+                          key={table.id}
+                          className={`absolute flex items-center justify-center text-sm font-semibold transition-all ring-1 ring-black/40
+                            ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
+                            ${isActive
+                              ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_25px_rgba(214,178,94,0.8)]"
+                              : "bg-neutral-700 text-neutral-300"
+                            }`}
+                          style={{
+                            left: `${scaledLeft}%`,
+                            top: `${scaledTop}%`,
+                            width: `${table.render.widthPercent * scaleData.scale}%`,
+                            height: `${table.render.heightPercent * scaleData.scale}%`,
+                            transform: "translate(-50%, -50%)",
+                            zIndex: isActive ? 10 : 1
+                          }}
+                        >
+                          {table.id}
+                        </div>
+                      );
+                    })
+                )}
 
               </div>
             </div>
