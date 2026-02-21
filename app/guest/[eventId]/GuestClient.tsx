@@ -125,6 +125,7 @@ export default function GuestClient() {
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
   const SAFE = 6;
+  const MIN_DISTANCE = 2; // 🔥 minimum afstand mellem borde i %
 
   const scalePosition = (value: number) =>
     SAFE + (value * (100 - SAFE * 2)) / 100;
@@ -132,7 +133,6 @@ export default function GuestClient() {
   const scaleSize = (value: number) =>
     (value * (100 - SAFE * 2)) / 100;
 
-  // 🔥 Gruppér efter x (kolonner)
   const columns = Array.from(
     new Set(event.layout.tables.map((t) => t.x))
   ).sort((a, b) => a - b);
@@ -207,9 +207,35 @@ export default function GuestClient() {
                   event.layout.tables
                     .filter((t) => t.x === col)
                     .sort((a, b) => a.y - b.y)
-                    .map((table) => {
+                    .map((table, index, arr) => {
 
                       const isActive = table.id === guestResult.guest.table;
+
+                      const width = scaleSize(table.render.widthPercent);
+                      const height = scaleSize(table.render.heightPercent);
+
+                      let left = scalePosition(table.render.leftPercent);
+                      let top = scalePosition(table.render.topPercent);
+
+                      const halfWidth = width / 2;
+                      const halfHeight = height / 2;
+
+                      // 🔥 SAFE clamp (kanter)
+                      left = Math.max(SAFE + halfWidth, Math.min(100 - SAFE - halfWidth, left));
+                      top = Math.max(SAFE + halfHeight, Math.min(100 - SAFE - halfHeight, top));
+
+                      // 🔥 Minimum horisontal afstand i samme kolonne
+                      if (index > 0) {
+                        const prev = arr[index - 1];
+                        const prevWidth = scaleSize(prev.render.widthPercent);
+                        const prevLeft = scalePosition(prev.render.leftPercent);
+                        const minAllowed =
+                          prevLeft + prevWidth / 2 + halfWidth + MIN_DISTANCE;
+
+                        if (left < minAllowed) {
+                          left = minAllowed;
+                        }
+                      }
 
                       return (
                         <div
@@ -221,10 +247,10 @@ export default function GuestClient() {
                               : "bg-neutral-700 text-neutral-300"
                             }`}
                           style={{
-                            left: `${scalePosition(table.render.leftPercent)}%`,
-                            top: `${scalePosition(table.render.topPercent)}%`,
-                            width: `${scaleSize(table.render.widthPercent)}%`,
-                            height: `${scaleSize(table.render.heightPercent)}%`,
+                            left: `${left}%`,
+                            top: `${top}%`,
+                            width: `${width}%`,
+                            height: `${height}%`,
                             transform: "translate(-50%, -50%)",
                             zIndex: isActive ? 10 : 1
                           }}
