@@ -124,6 +124,7 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
+  const FRAME_PADDING = 4; // 🔥 luft inde i rammen (kan justeres)
 
   const columns = Array.from(
     new Set(event.layout.tables.map((t) => t.x))
@@ -206,14 +207,20 @@ export default function GuestClient() {
                       const halfWidth = table.render.widthPercent / 2;
                       const halfHeight = table.render.heightPercent / 2;
 
+                      const minLeft = FRAME_PADDING + halfWidth;
+                      const maxLeft = 100 - FRAME_PADDING - halfWidth;
+
+                      const minTop = FRAME_PADDING + halfHeight;
+                      const maxTop = 100 - FRAME_PADDING - halfHeight;
+
                       const clampedLeft = Math.min(
-                        Math.max(table.render.leftPercent, halfWidth),
-                        100 - halfWidth
+                        Math.max(table.render.leftPercent, minLeft),
+                        maxLeft
                       );
 
                       const clampedTop = Math.min(
-                        Math.max(table.render.topPercent, halfHeight),
-                        100 - halfHeight
+                        Math.max(table.render.topPercent, minTop),
+                        maxTop
                       );
 
                       return (
