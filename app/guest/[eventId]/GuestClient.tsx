@@ -95,7 +95,7 @@ export default function GuestClient() {
 
     try {
       const res = await fetch(
-        `${API_BASE}/api/guest?eventId=${eventId}&name=${encodeURIComponent(
+        `${API_BASE}/api/public/event/${eventId}/guest?name=${encodeURIComponent(
           guestName.trim()
         )}`,
         { cache: "no-store" }
