@@ -47,6 +47,8 @@ interface GuestNotFoundResponse {
 
 type GuestResponse = GuestFoundResponse | GuestNotFoundResponse;
 
+const REFERENCE_WIDTH = 375;
+
 export default function GuestClient() {
   const params = useParams();
   const eventId = params.eventId as string;
@@ -122,6 +124,7 @@ export default function GuestClient() {
   }
 
   const aspectRatio = event.layout.metadata?.aspectRatio ?? 1;
+  const containerHeight = REFERENCE_WIDTH / aspectRatio;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -189,12 +192,20 @@ export default function GuestClient() {
 
               <div className="w-full flex justify-center">
                 <div
-                  className="relative w-full max-w-[375px] mx-auto bg-black rounded-2xl overflow-visible"
-                  style={{ aspectRatio }}
+                  className="relative mx-auto bg-black rounded-2xl overflow-visible"
+                  style={{
+                    width: REFERENCE_WIDTH,
+                    height: containerHeight
+                  }}
                 >
                   {event.layout.tables.map((table) => {
 
                     const isActive = table.id === guestResult.guest.table;
+
+                    const left = (table.render.leftPercent / 100) * REFERENCE_WIDTH;
+                    const top = (table.render.topPercent / 100) * containerHeight;
+                    const width = (table.render.widthPercent / 100) * REFERENCE_WIDTH;
+                    const height = (table.render.heightPercent / 100) * containerHeight;
 
                     return (
                       <div
@@ -206,10 +217,10 @@ export default function GuestClient() {
                             : "bg-neutral-700 text-neutral-300"
                           }`}
                         style={{
-                          left: `${table.render.leftPercent}%`,
-                          top: `${table.render.topPercent}%`,
-                          width: `${table.render.widthPercent}%`,
-                          height: `${table.render.heightPercent}%`,
+                          left,
+                          top,
+                          width,
+                          height,
                           transform: "translate(-50%, -50%)",
                           zIndex: isActive ? 10 : 1
                         }}
