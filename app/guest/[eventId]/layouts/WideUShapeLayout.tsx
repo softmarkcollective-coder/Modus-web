@@ -27,9 +27,19 @@ export default function WideUShapeLayout({
   aspectRatio,
 }: Props) {
 
-  // 🔒 Indre sikkerhedszone (4% på hver side)
-  const SAFE_MARGIN = 4;       // %
-  const SCALE = 100 - SAFE_MARGIN * 2; // 92%
+  // 🔥 Dynamisk horisontal beregning
+  const minLeft = Math.min(
+    ...tables.map(t => t.render.leftPercent - t.render.widthPercent / 2)
+  );
+
+  const maxRight = Math.max(
+    ...tables.map(t => t.render.leftPercent + t.render.widthPercent / 2)
+  );
+
+  const totalWidth = maxRight - minLeft;
+
+  // Skalér kun hvis layout fylder mere end 100%
+  const scale = totalWidth > 100 ? 100 / totalWidth : 1;
 
   return (
     <div
@@ -40,6 +50,12 @@ export default function WideUShapeLayout({
     >
       {tables.map((table) => {
         const isActive = table.id === activeTableId;
+
+        const normalizedLeft =
+          (table.render.leftPercent - minLeft) * scale;
+
+        const normalizedWidth =
+          table.render.widthPercent * scale;
 
         return (
           <div
@@ -52,14 +68,10 @@ export default function WideUShapeLayout({
                   : "bg-neutral-700 text-neutral-300"
               }`}
             style={{
-              // ✅ Horisontal safety scaling
-              left: `calc(${table.render.leftPercent}% * ${SCALE / 100} + ${SAFE_MARGIN}%)`,
-              width: `calc(${table.render.widthPercent}% * ${SCALE / 100})`,
-
-              // Vertikal bevares 1:1
+              left: `${normalizedLeft}%`,
+              width: `${normalizedWidth}%`,
               top: `${table.render.topPercent}%`,
               height: `${table.render.heightPercent}%`,
-
               transform: "translate(-50%, -50%)",
             }}
           >
