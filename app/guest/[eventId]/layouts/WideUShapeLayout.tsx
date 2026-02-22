@@ -27,7 +27,6 @@ export default function WideUShapeLayout({
   aspectRatio,
 }: Props) {
 
-  // 🔥 Dynamisk horisontal beregning
   const minLeft = Math.min(
     ...tables.map(t => t.render.leftPercent - t.render.widthPercent / 2)
   );
@@ -38,7 +37,6 @@ export default function WideUShapeLayout({
 
   const totalWidth = maxRight - minLeft;
 
-  // Skalér kun hvis layout fylder mere end 100%
   const scale = totalWidth > 100 ? 100 / totalWidth : 1;
 
   return (
@@ -51,11 +49,18 @@ export default function WideUShapeLayout({
       {tables.map((table) => {
         const isActive = table.id === activeTableId;
 
-        const normalizedLeft =
-          (table.render.leftPercent - minLeft) * scale;
-
         const normalizedWidth =
           table.render.widthPercent * scale;
+
+        const normalizedHeight =
+          table.render.heightPercent;
+
+        // 🔒 Brug top-left koordinater (ingen translate)
+        const normalizedLeft =
+          (table.render.leftPercent - table.render.widthPercent / 2 - minLeft) * scale;
+
+        const normalizedTop =
+          table.render.topPercent - table.render.heightPercent / 2;
 
         return (
           <div
@@ -69,10 +74,9 @@ export default function WideUShapeLayout({
               }`}
             style={{
               left: `${normalizedLeft}%`,
+              top: `${normalizedTop}%`,
               width: `${normalizedWidth}%`,
-              top: `${table.render.topPercent}%`,
-              height: `${table.render.heightPercent}%`,
-              transform: "translate(-50%, -50%)",
+              height: `${normalizedHeight}%`,
             }}
           >
             {table.id}
