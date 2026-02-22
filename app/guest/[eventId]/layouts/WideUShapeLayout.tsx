@@ -26,6 +26,11 @@ export default function WideUShapeLayout({
   activeTableId,
   aspectRatio,
 }: Props) {
+
+  // 🔒 Indre sikkerhedszone (4% på hver side)
+  const SAFE_MARGIN = 4;       // %
+  const SCALE = 100 - SAFE_MARGIN * 2; // 92%
+
   return (
     <div
       className="relative w-full"
@@ -47,10 +52,14 @@ export default function WideUShapeLayout({
                   : "bg-neutral-700 text-neutral-300"
               }`}
             style={{
-              left: `${table.render.leftPercent}%`,
+              // ✅ Horisontal safety scaling
+              left: `calc(${table.render.leftPercent}% * ${SCALE / 100} + ${SAFE_MARGIN}%)`,
+              width: `calc(${table.render.widthPercent}% * ${SCALE / 100})`,
+
+              // Vertikal bevares 1:1
               top: `${table.render.topPercent}%`,
-              width: `${table.render.widthPercent}%`,
               height: `${table.render.heightPercent}%`,
+
               transform: "translate(-50%, -50%)",
             }}
           >
