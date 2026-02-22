@@ -47,7 +47,7 @@ export default function BaseColumnLayout({
 
   return (
     <div
-      className={`grid ${config.columnGap} text-center`}
+      className={`grid ${config.columnGap} text-center justify-center`}
       style={{
         gridTemplateColumns: `repeat(${columns.length}, auto)`,
       }}
