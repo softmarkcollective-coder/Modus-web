@@ -191,12 +191,11 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              {/* 🔧 removed extra px wrapper */}
               <LayoutRenderer
-                type={event.layout.type}
-                tables={event.layout.tables}
+                type={event.layout?.type ?? "custom"}
+                tables={event.layout?.tables ?? []}
                 activeTableId={guestResult.guest.table}
-                metadata={event.layout.metadata}
+                metadata={event.layout?.metadata}
               />
 
             </div>
@@ -224,7 +223,7 @@ export default function GuestClient() {
         )}
 
         <div className="text-neutral-600 text-sm">
-          {event.layout.tables.length} tables at this event
+          {(event.layout?.tables ?? []).length} tables at this event
         </div>
 
       </div>

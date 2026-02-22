@@ -39,6 +39,9 @@ export default function LayoutRenderer({
   metadata,
 }: Props) {
 
+  // 🔒 Defensiv sikring
+  const safeTables = Array.isArray(tables) ? tables : [];
+
   // 🔒 Normaliser type fra backend
   const layoutType = (type ?? "custom").toLowerCase().trim();
 
@@ -47,7 +50,7 @@ export default function LayoutRenderer({
     case "u-shape":
       return (
         <UShapeLayout
-          tables={tables}
+          tables={safeTables}
           activeTableId={activeTableId}
         />
       );
@@ -55,7 +58,7 @@ export default function LayoutRenderer({
     case "wide-u-shape":
       return (
         <WideUShapeLayout
-          tables={tables}
+          tables={safeTables}
           activeTableId={activeTableId}
           aspectRatio={metadata?.aspectRatio}
         />
@@ -64,7 +67,7 @@ export default function LayoutRenderer({
     case "long-tables":
       return (
         <LongTablesLayout
-          tables={tables}
+          tables={safeTables}
           activeTableId={activeTableId}
         />
       );
@@ -72,7 +75,7 @@ export default function LayoutRenderer({
     case "theater":
       return (
         <TheaterLayout
-          tables={tables}
+          tables={safeTables}
           activeTableId={activeTableId}
         />
       );
@@ -80,7 +83,7 @@ export default function LayoutRenderer({
     case "banquet-3":
       return (
         <Banquet3Layout
-          tables={tables}
+          tables={safeTables}
           activeTableId={activeTableId}
         />
       );
@@ -88,7 +91,7 @@ export default function LayoutRenderer({
     case "banquet-5":
       return (
         <Banquet5Layout
-          tables={tables}
+          tables={safeTables}
           activeTableId={activeTableId}
         />
       );
@@ -97,7 +100,7 @@ export default function LayoutRenderer({
     default:
       return (
         <CustomLayout
-          tables={tables}
+          tables={safeTables}
           activeTableId={activeTableId}
         />
       );
