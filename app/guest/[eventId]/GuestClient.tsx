@@ -26,6 +26,7 @@ interface EventData {
   hostMessage?: string | null;
   menu?: string[] | null;
   menuTitle?: string | null;
+  menuType?: "menu" | "agenda" | null; // ✅ added
   layout: {
     type?: string | null;
     tables: Table[];
@@ -206,7 +207,7 @@ export default function GuestClient() {
             {event.menu && event.menu.length > 0 && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                  {event.menuTitle ?? (event.layout?.type === "agenda" ? "Agenda" : "Menu")}
+                  {event.menuTitle ?? (event.menuType === "agenda" ? "Agenda" : "Menu")}
                 </h3>
                 <ul className="space-y-3 text-neutral-300">
                   {event.menu.map((item, index) => (
