@@ -128,7 +128,8 @@ export default function GuestClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
-      <div className="w-full max-w-xl mx-auto text-center space-y-8">
+      {/* 🔧 max-w-xl → max-w-lg for app match */}
+      <div className="w-full max-w-lg mx-auto text-center space-y-8">
 
         {event.image && event.image.startsWith("http") && (
           <div className="relative">
@@ -190,15 +191,13 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              {/* ✅ Kun denne wrapper er tilføjet */}
-              <div className="px-4 sm:px-6">
-                <LayoutRenderer
-                  type={event.layout.type}
-                  tables={event.layout.tables}
-                  activeTableId={guestResult.guest.table}
-                  metadata={event.layout.metadata}
-                />
-              </div>
+              {/* 🔧 removed extra px wrapper */}
+              <LayoutRenderer
+                type={event.layout.type}
+                tables={event.layout.tables}
+                activeTableId={guestResult.guest.table}
+                metadata={event.layout.metadata}
+              />
 
             </div>
 
