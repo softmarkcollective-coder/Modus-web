@@ -190,12 +190,15 @@ export default function GuestClient() {
                 Seating Layout
               </p>
 
-              <LayoutRenderer
-                type={event.layout.type}
-                tables={event.layout.tables}
-                activeTableId={guestResult.guest.table}
-                metadata={event.layout.metadata}
-              />
+              {/* ✅ Kun denne wrapper er tilføjet */}
+              <div className="px-4 sm:px-6">
+                <LayoutRenderer
+                  type={event.layout.type}
+                  tables={event.layout.tables}
+                  activeTableId={guestResult.guest.table}
+                  metadata={event.layout.metadata}
+                />
+              </div>
 
             </div>
 
