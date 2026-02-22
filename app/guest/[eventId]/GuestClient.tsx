@@ -128,17 +128,15 @@ export default function GuestClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
-      {/* 🔧 max-w-xl → max-w-lg for app match */}
       <div className="w-full max-w-lg mx-auto text-center space-y-8">
 
-        {event.image && event.image.startsWith("http") && (
-          <div className="relative">
+        {event.image && (
+          <div>
             <img
               src={event.image}
               alt={event.name}
-              className="w-full h-52 object-cover rounded-3xl shadow-2xl"
+              className="w-full h-64 object-cover rounded-3xl shadow-2xl"
             />
-            <div className="absolute inset-0 bg-black/40 rounded-3xl" />
           </div>
         )}
 
