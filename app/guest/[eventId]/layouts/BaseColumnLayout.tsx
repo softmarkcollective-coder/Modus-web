@@ -49,7 +49,7 @@ export default function BaseColumnLayout({
     <div
       className={`grid ${config.columnGap} text-center justify-center`}
       style={{
-        gridTemplateColumns: `repeat(${columns.length}, auto)`,
+        gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr))`,
       }}
     >
       {columns.map((column, colIndex) => (
@@ -85,7 +85,12 @@ export default function BaseColumnLayout({
                       ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_28px_rgba(214,178,94,0.6)]"
                       : "bg-neutral-700 text-neutral-300"
                   }`}
-                style={{ width, height }}
+                style={{
+                  width,
+                  height,
+                  maxWidth: "100%",
+                  minWidth: 0,
+                }}
               >
                 {table.id}
               </div>
