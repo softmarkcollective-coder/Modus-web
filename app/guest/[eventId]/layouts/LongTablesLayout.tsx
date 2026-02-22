@@ -40,6 +40,21 @@ export default function LongTablesLayout({
         const top =
           table.render.topPercent - table.render.heightPercent / 2;
 
+        // ✅ KUN DETTE ER TILFØJET
+        const width =
+          table.shape === "round"
+            ? table.render.heightPercent
+            : table.orientation === "vertical"
+            ? table.render.heightPercent
+            : table.render.widthPercent;
+
+        const height =
+          table.shape === "round"
+            ? table.render.heightPercent
+            : table.orientation === "vertical"
+            ? table.render.widthPercent
+            : table.render.heightPercent;
+
         return (
           <div
             key={table.id}
@@ -53,8 +68,8 @@ export default function LongTablesLayout({
             style={{
               left: `${left}%`,
               top: `${top}%`,
-              width: `${table.render.widthPercent}%`,
-              height: `${table.render.heightPercent}%`,
+              width: `${width}%`,
+              height: `${height}%`,
             }}
           >
             {table.id}
