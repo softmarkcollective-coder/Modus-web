@@ -34,13 +34,7 @@ export default function LongTablesLayout({
 
         const isActive = table.id === activeTableId;
 
-        const left =
-          table.render.leftPercent - table.render.widthPercent / 2;
-
-        const top =
-          table.render.topPercent - table.render.heightPercent / 2;
-
-        // ✅ KUN DETTE ER TILFØJET
+        // ✅ Korrekt visuel størrelse
         const width =
           table.shape === "round"
             ? table.render.heightPercent
@@ -54,6 +48,13 @@ export default function LongTablesLayout({
             : table.orientation === "vertical"
             ? table.render.widthPercent
             : table.render.heightPercent;
+
+        // ✅ Position beregnes EFTER width/height er fastlagt
+        const left =
+          table.render.leftPercent - width / 2;
+
+        const top =
+          table.render.topPercent - height / 2;
 
         return (
           <div
