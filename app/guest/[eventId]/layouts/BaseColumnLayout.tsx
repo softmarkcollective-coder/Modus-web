@@ -16,11 +16,11 @@ interface Table {
 }
 
 interface LayoutConfig {
-  columnGap: string;   // fx "gap-4"
-  rowGap: string;      // fx "gap-3"
-  baseUnit: number;    // størrelse-skalering
-  roundSize: number;   // størrelse på runde borde
-  paddingX?: string;   // fx "px-1"
+  columnGap: string;
+  rowGap: string;
+  baseUnit: number;
+  roundSize: number;
+  paddingX?: string;
 }
 
 interface Props {
@@ -46,58 +46,55 @@ export default function BaseColumnLayout({
   );
 
   return (
-    <div
-      className={`grid ${config.columnGap} text-center justify-center`}
-      style={{
-        gridTemplateColumns: `repeat(${columns.length}, minmax(0,1fr))`,
-      }}
-    >
-      {columns.map((column, colIndex) => (
-        <div
-          key={colIndex}
-          className={`flex flex-col ${config.rowGap} items-center ${config.paddingX ?? ""}`}
-        >
-          {column.map((table) => {
+    <div className="w-full overflow-hidden flex justify-center">
+      <div
+        className={`grid ${config.columnGap} text-center`}
+        style={{
+          gridTemplateColumns: `repeat(${columns.length}, auto)`,
+        }}
+      >
+        {columns.map((column, colIndex) => (
+          <div
+            key={colIndex}
+            className={`flex flex-col ${config.rowGap} items-center ${config.paddingX ?? ""}`}
+          >
+            {column.map((table) => {
 
-            const isActive = table.id === activeTableId;
+              const isActive = table.id === activeTableId;
 
-            const width =
-              table.shape === "round"
-                ? config.roundSize
-                : table.orientation === "horizontal"
-                ? config.baseUnit * (table.size ?? 1)
-                : config.baseUnit;
+              const width =
+                table.shape === "round"
+                  ? config.roundSize
+                  : table.orientation === "horizontal"
+                  ? config.baseUnit * (table.size ?? 1)
+                  : config.baseUnit;
 
-            const height =
-              table.shape === "round"
-                ? config.roundSize
-                : table.orientation === "horizontal"
-                ? config.baseUnit
-                : config.baseUnit * (table.size ?? 1);
+              const height =
+                table.shape === "round"
+                  ? config.roundSize
+                  : table.orientation === "horizontal"
+                  ? config.baseUnit
+                  : config.baseUnit * (table.size ?? 1);
 
-            return (
-              <div
-                key={table.id}
-                className={`flex items-center justify-center text-sm font-semibold transition-all
-                  ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
-                  ${
-                    isActive
-                      ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_28px_rgba(214,178,94,0.6)]"
-                      : "bg-neutral-700 text-neutral-300"
-                  }`}
-                style={{
-                  width,
-                  height,
-                  maxWidth: "100%",
-                  minWidth: 0,
-                }}
-              >
-                {table.id}
-              </div>
-            );
-          })}
-        </div>
-      ))}
+              return (
+                <div
+                  key={table.id}
+                  className={`flex items-center justify-center text-sm font-semibold transition-all
+                    ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
+                    ${
+                      isActive
+                        ? "bg-gradient-to-br from-[#f0d78c] to-[#b8932f] text-black shadow-[0_0_28px_rgba(214,178,94,0.6)]"
+                        : "bg-neutral-700 text-neutral-300"
+                    }`}
+                  style={{ width, height }}
+                >
+                  {table.id}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
