@@ -25,41 +25,39 @@ export default function LongTablesLayout({
   activeTableId,
 }: Props) {
 
+  // 🔥 Sorter vertikalt efter y (samme logik som appen)
+  const sortedTables = [...tables].sort((a, b) => a.y - b.y);
+
   return (
     <div
-      className="relative w-full"
+      className="flex flex-col items-center gap-4 w-full"
       style={{ aspectRatio: 1.5 }}
     >
-      {tables.map((table) => {
+      {sortedTables.map((table) => {
 
         const isActive = table.id === activeTableId;
 
-        // ✅ Korrekt visuel størrelse
+        const baseUnit = 50;
+        const roundSize = 60;
+
         const width =
           table.shape === "round"
-            ? table.render.heightPercent
-            : table.orientation === "vertical"
-            ? table.render.heightPercent
-            : table.render.widthPercent;
+            ? roundSize
+            : table.orientation === "horizontal"
+            ? baseUnit * (table.size ?? 1)
+            : baseUnit;
 
         const height =
           table.shape === "round"
-            ? table.render.heightPercent
-            : table.orientation === "vertical"
-            ? table.render.widthPercent
-            : table.render.heightPercent;
-
-        // ✅ Position beregnes EFTER width/height er fastlagt
-        const left =
-          table.render.leftPercent - width / 2;
-
-        const top =
-          table.render.topPercent - height / 2;
+            ? roundSize
+            : table.orientation === "horizontal"
+            ? baseUnit
+            : baseUnit * (table.size ?? 1);
 
         return (
           <div
             key={table.id}
-            className={`absolute flex items-center justify-center text-sm font-semibold transition-all
+            className={`flex items-center justify-center text-sm font-semibold transition-all
               ${table.shape === "round" ? "rounded-full" : "rounded-xl"}
               ${
                 isActive
@@ -67,10 +65,8 @@ export default function LongTablesLayout({
                   : "bg-neutral-700 text-neutral-300"
               }`}
             style={{
-              left: `${left}%`,
-              top: `${top}%`,
-              width: `${width}%`,
-              height: `${height}%`,
+              width,
+              height,
             }}
           >
             {table.id}
