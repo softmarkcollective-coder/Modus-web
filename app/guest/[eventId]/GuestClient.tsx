@@ -46,6 +46,7 @@ interface GuestFoundResponse {
 
 interface GuestNotFoundResponse {
   found: false;
+  suggestions?: { name: string }[]; // ✅ added
 }
 
 type GuestResponse = GuestFoundResponse | GuestNotFoundResponse;
@@ -89,17 +90,14 @@ export default function GuestClient() {
     fetchEvent();
   }, [eventId, API_BASE]);
 
-  async function handleGuestLookup(e: React.FormEvent) {
-    e.preventDefault();
-    if (!guestName.trim()) return;
-
+  async function lookup(name: string) {
     setGuestLoading(true);
     setGuestResult(null);
 
     try {
       const res = await fetch(
         `${API_BASE}/api/public/event/${eventId}/guest?name=${encodeURIComponent(
-          guestName.trim()
+          name.trim()
         )}`,
         { cache: "no-store" }
       );
@@ -109,6 +107,12 @@ export default function GuestClient() {
     } finally {
       setGuestLoading(false);
     }
+  }
+
+  async function handleGuestLookup(e: React.FormEvent) {
+    e.preventDefault();
+    if (!guestName.trim()) return;
+    lookup(guestName);
   }
 
   if (loading || !event) {
@@ -155,7 +159,7 @@ export default function GuestClient() {
             type="text"
             value={guestName}
             onChange={(e) => setGuestName(e.target.value)}
-            placeholder="Type your name as it appears on the invitation"
+            placeholder="Type your name here"
             className="w-full px-6 py-4 rounded-2xl bg-neutral-900 border border-neutral-800
                        focus:outline-none focus:ring-2 focus:ring-[#d6b25e]
                        text-white text-lg text-center"
@@ -175,7 +179,7 @@ export default function GuestClient() {
           </button>
         </form>
 
-        {/* Guest found with table */}
+        {/* Exact match with table */}
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
@@ -235,17 +239,47 @@ export default function GuestClient() {
           </div>
         )}
 
-        {/* Guest not found */}
-        {guestResult && !guestResult.found && (
-          <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-400 text-sm space-y-2">
-            <p className="font-medium text-white">
-              We couldn’t find that name.
-            </p>
-            <p>
-              Please check the spelling and try again.
-            </p>
-          </div>
-        )}
+        {/* Multiple matches */}
+        {guestResult &&
+          !guestResult.found &&
+          guestResult.suggestions &&
+          guestResult.suggestions.length > 0 && (
+            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left space-y-4">
+              <p className="text-white font-medium">
+                We found multiple guests. Please choose your name:
+              </p>
+              <ul className="space-y-2">
+                {guestResult.suggestions.map((s, index) => (
+                  <li key={index}>
+                    <button
+                      onClick={() => {
+                        setGuestName(s.name);
+                        lookup(s.name);
+                      }}
+                      className="w-full text-left px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 transition"
+                    >
+                      {s.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+        {/* No match at all */}
+        {guestResult &&
+          !guestResult.found &&
+          (!guestResult.suggestions ||
+            guestResult.suggestions.length === 0) && (
+            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-400 text-sm space-y-2">
+              <p className="font-medium text-white">
+                We couldn’t find that name.
+              </p>
+              <p>
+                Please check the spelling and try again.
+              </p>
+            </div>
+          )}
 
         <div className="text-neutral-600 text-sm">
           {(event.layout?.tables ?? []).length} tables at this event
