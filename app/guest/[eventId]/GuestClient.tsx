@@ -48,7 +48,7 @@ interface GuestFoundResponse {
   guest: {
     name: string;
     table: number | null;
-    arrivedAt?: number | null; // ✅ added only this
+    arrivedAt?: string | number | null; // ✅ adjusted to match backend
   };
 }
 
@@ -141,8 +141,7 @@ export default function GuestClient() {
 
   const isArrived =
     guestResult?.found &&
-    guestResult.guest.arrivedAt &&
-    guestResult.guest.arrivedAt !== null;
+    guestResult.guest.arrivedAt != null; // ✅ simplified check
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
