@@ -72,6 +72,7 @@ export default function GuestClient() {
   const [guestName, setGuestName] = useState("");
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
+  const [checkinLoading, setCheckinLoading] = useState(false); // ✅ added
 
   useEffect(() => {
     if (!eventId) return;
@@ -245,13 +246,18 @@ export default function GuestClient() {
               </div>
             )}
 
-            {/* ✅ Check-in section moved below menu */}
+            {/* ✅ Check-in section */}
 
             <div className="space-y-4">
               {!isArrived && (
                 <button
+                  disabled={checkinLoading}
                   onClick={async () => {
-                    await fetch(
+                    if (!guestResult?.found) return;
+
+                    setCheckinLoading(true);
+
+                    const res = await fetch(
                       `${API_BASE}/api/public/event/${eventId}/guest/checkin`,
                       {
                         method: "POST",
@@ -259,18 +265,32 @@ export default function GuestClient() {
                         body: JSON.stringify({ name: guestResult.guest.name })
                       }
                     );
-                    lookup(guestResult.guest.name);
+
+                    if (res.ok) {
+                      const data = await res.json();
+                      setGuestResult({
+                        ...guestResult,
+                        guest: {
+                          ...guestResult.guest,
+                          arrivedAt: data.arrivedAt ?? Date.now()
+                        }
+                      });
+                    }
+
+                    setCheckinLoading(false);
                   }}
                   className="w-full py-4 rounded-2xl font-semibold text-lg
-                             bg-green-600 hover:bg-green-500 transition"
+                             bg-[#2F6F4F] hover:bg-[#3B8A63]
+                             border border-[#3FAE74]
+                             text-[#CFFFE5] transition"
                 >
-                  ✓ Mark as arrived
+                  {checkinLoading ? "Checking in..." : "✓ Mark as arrived"}
                 </button>
               )}
 
               {isArrived && (
                 <div className="w-full py-4 rounded-2xl font-semibold text-lg
-                                bg-green-900 text-green-300 border border-green-700">
+                                bg-[#1E3D2F] text-[#9FE2BF] border border-[#3FAE74]">
                   ✓ You’re checked in
                 </div>
               )}
@@ -289,46 +309,6 @@ export default function GuestClient() {
             </p>
           </div>
         )}
-
-        {guestResult &&
-          !guestResult.found &&
-          guestResult.suggestions &&
-          guestResult.suggestions.length > 0 && (
-            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left space-y-4">
-              <p className="text-white font-medium">
-                We found multiple guests. Please choose your name:
-              </p>
-              <ul className="space-y-2">
-                {guestResult.suggestions.map((s, index) => (
-                  <li key={index}>
-                    <button
-                      onClick={() => {
-                        setGuestName(s.name);
-                        lookup(s.name);
-                      }}
-                      className="w-full text-left px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 transition"
-                    >
-                      {s.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-        {guestResult &&
-          !guestResult.found &&
-          (!guestResult.suggestions ||
-            guestResult.suggestions.length === 0) && (
-            <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-400 text-sm space-y-2">
-              <p className="font-medium text-white">
-                We couldn’t find that name.
-              </p>
-              <p>
-                Please check the spelling and try again.
-              </p>
-            </div>
-          )}
 
         <div className="text-neutral-600 text-sm">
           {(event.layout?.tables ?? []).length} tables at this event
