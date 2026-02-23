@@ -20,7 +20,7 @@ interface Table {
 }
 
 interface MenuItem {
-  title: string;
+  name: string;
   description?: string | null;
 }
 
@@ -29,9 +29,11 @@ interface EventData {
   name: string;
   image: string | null;
   hostMessage?: string | null;
-  menu?: (string | MenuItem)[] | null; // ✅ updated to support structured menu
-  menuTitle?: string | null;
-  menuType?: "menu" | "agenda" | null;
+  menu?: {
+    title: string | null;
+    type: "menu" | "agenda";
+    items: MenuItem[];
+  } | null;
   layout: {
     type?: string | null;
     tables: Table[];
@@ -215,31 +217,25 @@ export default function GuestClient() {
               </div>
             )}
 
-            {event.menu && event.menu.length > 0 && (
+            {event.menu && event.menu.items.length > 0 && (
               <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-left">
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
-                  {event.menuTitle ?? (event.menuType === "agenda" ? "Agenda" : "Menu")}
+                  {event.menu.title ?? (event.menu.type === "agenda" ? "Agenda" : "Menu")}
                 </h3>
 
                 <ul className="space-y-4 text-neutral-300">
-                  {event.menu.map((item, index) => {
-                    if (typeof item === "string") {
-                      return <li key={index}>{item}</li>;
-                    }
-
-                    return (
-                      <li key={index}>
-                        <div className="font-medium text-white">
-                          {item.title}
+                  {event.menu.items.map((item, index) => (
+                    <li key={index}>
+                      <div className="font-medium text-white">
+                        {item.name}
+                      </div>
+                      {item.description && (
+                        <div className="text-sm text-neutral-400">
+                          {item.description}
                         </div>
-                        {item.description && (
-                          <div className="text-sm text-neutral-400">
-                            {item.description}
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
+                      )}
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}
