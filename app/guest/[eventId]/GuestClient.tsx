@@ -72,7 +72,7 @@ export default function GuestClient() {
   const [guestName, setGuestName] = useState("");
   const [guestResult, setGuestResult] = useState<GuestResponse | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
-  const [checkinLoading, setCheckinLoading] = useState(false); // ✅ added
+  const [checkinLoading, setCheckinLoading] = useState(false);
 
   useEffect(() => {
     if (!eventId) return;
@@ -246,7 +246,7 @@ export default function GuestClient() {
               </div>
             )}
 
-            {/* ✅ Check-in section */}
+            {/* Check-in section */}
 
             <div className="space-y-4">
               {!isArrived && (
@@ -280,9 +280,9 @@ export default function GuestClient() {
                     setCheckinLoading(false);
                   }}
                   className="w-full py-4 rounded-2xl font-semibold text-lg
-                             bg-[#2F6F4F] hover:bg-[#3B8A63]
-                             border border-[#3FAE74]
-                             text-[#CFFFE5] transition"
+                             bg-[#2B5E4A] hover:bg-[#346F59]
+                             border border-[#3E8E6B]
+                             text-[#A7E8C8] transition"
                 >
                   {checkinLoading ? "Checking in..." : "✓ Mark as arrived"}
                 </button>
@@ -290,7 +290,7 @@ export default function GuestClient() {
 
               {isArrived && (
                 <div className="w-full py-4 rounded-2xl font-semibold text-lg
-                                bg-[#1E3D2F] text-[#9FE2BF] border border-[#3FAE74]">
+                                bg-[#1F4033] text-[#A7E8C8] border border-[#3E8E6B]">
                   ✓ You’re checked in
                 </div>
               )}
