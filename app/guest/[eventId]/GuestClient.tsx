@@ -19,12 +19,17 @@ interface Table {
   };
 }
 
+interface MenuItem {
+  title: string;
+  description?: string | null;
+}
+
 interface EventData {
   id: string;
   name: string;
   image: string | null;
   hostMessage?: string | null;
-  menu?: string[] | null;
+  menu?: (string | MenuItem)[] | null; // ✅ updated to support structured menu
   menuTitle?: string | null;
   menuType?: "menu" | "agenda" | null;
   layout: {
@@ -46,7 +51,7 @@ interface GuestFoundResponse {
 
 interface GuestNotFoundResponse {
   found: false;
-  suggestions?: { name: string }[]; // ✅ added
+  suggestions?: { name: string }[];
 }
 
 type GuestResponse = GuestFoundResponse | GuestNotFoundResponse;
@@ -179,7 +184,6 @@ export default function GuestClient() {
           </button>
         </form>
 
-        {/* Exact match with table */}
         {guestResult?.found && guestResult.guest.table !== null && (
           <div className="space-y-8">
 
@@ -216,10 +220,26 @@ export default function GuestClient() {
                 <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-[#f0d78c] to-[#b8932f] bg-clip-text text-transparent">
                   {event.menuTitle ?? (event.menuType === "agenda" ? "Agenda" : "Menu")}
                 </h3>
-                <ul className="space-y-3 text-neutral-300">
-                  {event.menu.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
+
+                <ul className="space-y-4 text-neutral-300">
+                  {event.menu.map((item, index) => {
+                    if (typeof item === "string") {
+                      return <li key={index}>{item}</li>;
+                    }
+
+                    return (
+                      <li key={index}>
+                        <div className="font-medium text-white">
+                          {item.title}
+                        </div>
+                        {item.description && (
+                          <div className="text-sm text-neutral-400">
+                            {item.description}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
@@ -227,7 +247,6 @@ export default function GuestClient() {
           </div>
         )}
 
-        {/* Guest found but no table */}
         {guestResult?.found && guestResult.guest.table === null && (
           <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800 text-neutral-400 text-sm space-y-2">
             <p className="font-medium text-white">
@@ -239,7 +258,6 @@ export default function GuestClient() {
           </div>
         )}
 
-        {/* Multiple matches */}
         {guestResult &&
           !guestResult.found &&
           guestResult.suggestions &&
@@ -266,7 +284,6 @@ export default function GuestClient() {
             </div>
           )}
 
-        {/* No match at all */}
         {guestResult &&
           !guestResult.found &&
           (!guestResult.suggestions ||
