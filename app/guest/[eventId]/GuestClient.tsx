@@ -140,7 +140,7 @@ export default function GuestClient() {
   }
 
   const isArrived =
-    guestResult?.found &&
+    guestResult?.found === true &&
     guestResult.guest.arrivedAt != null; // ✅ simplified check
 
   return (
