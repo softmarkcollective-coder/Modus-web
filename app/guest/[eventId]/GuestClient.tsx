@@ -48,7 +48,7 @@ interface GuestFoundResponse {
   guest: {
     name: string;
     table: number | null;
-    arrivedAt?: string | number | null; // ✅ adjusted to match backend
+    arrivedAt?: string | number | null;
   };
 }
 
@@ -141,7 +141,7 @@ export default function GuestClient() {
 
   const isArrived =
     guestResult?.found === true &&
-    guestResult.guest.arrivedAt != null; // ✅ simplified check
+    guestResult.guest.arrivedAt != null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
@@ -201,12 +201,6 @@ export default function GuestClient() {
               <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
                 Table {guestResult.guest.table}
               </div>
-
-              {isArrived && (
-                <div className="mt-3 text-green-400 text-sm font-medium">
-                  ✓ You’re checked in
-                </div>
-              )}
             </div>
 
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
@@ -250,6 +244,37 @@ export default function GuestClient() {
                 </ul>
               </div>
             )}
+
+            {/* ✅ Check-in section moved below menu */}
+
+            <div className="space-y-4">
+              {!isArrived && (
+                <button
+                  onClick={async () => {
+                    await fetch(
+                      `${API_BASE}/api/public/event/${eventId}/guest/checkin`,
+                      {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name: guestResult.guest.name })
+                      }
+                    );
+                    lookup(guestResult.guest.name);
+                  }}
+                  className="w-full py-4 rounded-2xl font-semibold text-lg
+                             bg-green-600 hover:bg-green-500 transition"
+                >
+                  ✓ Mark as arrived
+                </button>
+              )}
+
+              {isArrived && (
+                <div className="w-full py-4 rounded-2xl font-semibold text-lg
+                                bg-green-900 text-green-300 border border-green-700">
+                  ✓ You’re checked in
+                </div>
+              )}
+            </div>
 
           </div>
         )}
