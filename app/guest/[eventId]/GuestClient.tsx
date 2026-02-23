@@ -48,6 +48,7 @@ interface GuestFoundResponse {
   guest: {
     name: string;
     table: number | null;
+    arrivedAt?: number | null; // ✅ added only this
   };
 }
 
@@ -138,6 +139,11 @@ export default function GuestClient() {
     );
   }
 
+  const isArrived =
+    guestResult?.found &&
+    guestResult.guest.arrivedAt &&
+    guestResult.guest.arrivedAt !== null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black text-white px-6 pt-8 pb-16">
       <div className="w-full max-w-lg mx-auto text-center space-y-8">
@@ -196,6 +202,12 @@ export default function GuestClient() {
               <div className="text-5xl font-bold bg-gradient-to-r from-[#f0d78c] via-[#d6b25e] to-[#b8932f] bg-clip-text text-transparent">
                 Table {guestResult.guest.table}
               </div>
+
+              {isArrived && (
+                <div className="mt-3 text-green-400 text-sm font-medium">
+                  ✓ You’re checked in
+                </div>
+              )}
             </div>
 
             <div className="p-6 bg-neutral-900 rounded-3xl border border-neutral-800">
