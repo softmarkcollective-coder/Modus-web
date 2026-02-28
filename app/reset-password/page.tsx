@@ -91,4 +91,4 @@ export default function ResetPasswordPage() {
       {error && <p style={{ color: 'red', marginTop: 20 }}>{error}</p>}
     </div>
   )
-}l
+}
